@@ -208,11 +208,14 @@ nltk_data/
 optuna_study*.db
 
 # =============================================================================
-# NLP datasets & large raw data (uncomment or narrow paths as needed)
+# Project datasets (Kaggle CSVs — large; keep only .gitkeep + README in raw)
 # =============================================================================
-# data/raw/
-# data/interim/
-# corpora/
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/README.txt
+data/processed/*
+!data/processed/.gitkeep
+data/processed_smoke/
 
 # =============================================================================
 # Docker (local overrides)

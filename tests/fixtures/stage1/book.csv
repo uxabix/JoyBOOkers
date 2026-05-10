@@ -1,0 +1,4 @@
+id,name,authors,publisher,publishyear,publishmonth,publishday,language,isbn,pagesnumber,rating,countsofreview,ratingdist1,ratingdist2,ratingdist3,ratingdist4,ratingdist5,ratingdisttotal
+1,Mini Book One,Author A,Test Press,2020,3,10,eng,1001,320,4.2,50,1:2,2:3,3:10,4:15,5:20,total:50
+2,Mini Book Two,Author B|Author C,Other Pub,1999,12,1,eng,1002,180,3.8,12,1:0,2:2,3:4,4:4,5:2,total:12
+3,Edge Year Book,Author D,,2005,7,20,pol,1003,400,4.0,5,1:0,2:0,3:1,4:2,5:2,total:5
