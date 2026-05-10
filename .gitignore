@@ -1,0 +1,228 @@
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+# lib/ and lib64/ — only if you use legacy setuptools layouts; uncomment if needed
+# lib/
+# lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.envrc
+.python-version
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+debug.log
+
+# Unit test / coverage
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+htmlcov/
+junit/
+test-results/
+*.prof
+*.lprof
+
+# Type checkers / linters
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+ruff_cache/
+.ruff_cache/
+
+# =============================================================================
+# Packaging & dependency managers
+# =============================================================================
+poetry.lock~
+Pipfile.lock~
+.pdm.toml~
+.pdm-python
+.pixi/
+
+# uv (optional local cache inside project)
+.uv/
+
+# =============================================================================
+# Jupyter / notebooks
+# =============================================================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+profile_default/
+ipython_config.py
+
+# =============================================================================
+# Secrets & environment (FastAPI / 12-factor)
+# =============================================================================
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+secrets.json
+credentials.json
+service-account*.json
+
+# =============================================================================
+# FastAPI / ASGI / web
+# =============================================================================
+*.log
+logs/
+*.sqlite3
+*.db
+instance/
+.webassets-cache
+
+# Static uploads / user content (adjust if you version small fixtures)
+uploads/
+media/
+
+# =============================================================================
+# IDEs & editors
+# =============================================================================
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# =============================================================================
+# OS
+# =============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# =============================================================================
+# Machine learning — artifacts & experiment tracking
+# =============================================================================
+# Checkpoints & weights
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.h5
+*.hdf5
+*.pb
+*.onnx
+*.tflite
+*.mlmodel
+*.joblib
+*.pkl
+*.pickle
+*.npy
+*.npz
+
+# Training outputs
+checkpoints/
+weights/
+artifacts/
+lightning_logs/
+tensorboard/
+tb_logs/
+runs/
+outputs/
+experiments/
+wandb/
+mlruns/
+.neptune/
+comet_ml/
+.dvc/tmp/
+.dvc/cache/
+
+# Hugging Face / Transformers caches (if stored inside repo)
+.cache/
+hf_cache/
+huggingface/
+transformers_cache/
+# HF default cache lives under the user profile; configure TRANSFORMERS_CACHE to a path inside the repo to apply rules above.
+
+# Sentence-Transformers / similar
+sentence_transformers_cache/
+
+# spaCy downloaded models (large binaries)
+*.spacy
+
+# NLTK / corpora downloaded at runtime (often huge)
+nltk_data/
+
+# Gensim / word2vec dumps
+*.model
+*.vec
+*.vectors
+
+# Optuna / hyperparameter DBs
+*.db-journal
+optuna_study*.db
+
+# =============================================================================
+# NLP datasets & large raw data (uncomment or narrow paths as needed)
+# =============================================================================
+# data/raw/
+# data/interim/
+# corpora/
+
+# =============================================================================
+# Docker (local overrides)
+# =============================================================================
+docker-compose.override.yml
+
+# =============================================================================
+# Misc
+# =============================================================================
+*.bak
+*.tmp
+*.temp
+.sass-cache/

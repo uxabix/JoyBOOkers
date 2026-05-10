@@ -1,0 +1,16 @@
+.venv
+venv
+__pycache__
+*.pyc
+.git
+.gitignore
+.idea
+.env
+.env.*
+!.env.example
+*.md
+.pytest_cache
+.mypy_cache
+.ruff_cache
+htmlcov
+.coverage
