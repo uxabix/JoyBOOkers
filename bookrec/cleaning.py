@@ -7,6 +7,8 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from bookrec.title_matching import TitleMatcher
+
 
 def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
@@ -94,9 +96,16 @@ def _clean_interactions_title_labels(
     df: pd.DataFrame,
     books_catalog: pd.DataFrame,
     valid_book_ids: set[int] | None,
+    *,
+    title_matcher: TitleMatcher | None = None,
+    fuzzy_threshold: int = 88,
+    enable_fuzzy: bool = True,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Join ratings on book title to catalog ids; map text stars to 1–5."""
-    report: dict[str, Any] = {"interactions_source_format": "title_labels"}
+    report: dict[str, Any] = {
+        "interactions_source_format": "title_labels",
+        "title_match_mode": "normalized_exact_core_fuzzy" if enable_fuzzy else "strip_exact_only",
+    }
     raw_n = len(df)
     work = df.replace(r"^\s*$", np.nan, regex=True).copy()
     work = work.rename(columns={"id": "user_id", "name": "book_title"})
@@ -110,15 +119,29 @@ def _clean_interactions_title_labels(
     work = work.dropna(subset=["rating"])
     report["rows_dropped_unmapped_rating"] = int(before_rating - len(work))
 
-    cat = books_catalog.copy()
-    if "name" not in cat.columns or "id" not in cat.columns:
+    if "name" not in books_catalog.columns or "id" not in books_catalog.columns:
         raise ValueError("books_catalog must contain columns id and name for title matching.")
-    cat["_match_name"] = cat["name"].astype(str).str.strip()
-    cat = cat.sort_values("id").drop_duplicates(subset=["_match_name"], keep="first")
-    lookup = cat.set_index("_match_name")["id"]
 
-    work["book_id"] = work["book_title"].map(lookup)
     before_join = len(work)
+    if enable_fuzzy:
+        matcher = title_matcher or TitleMatcher.from_catalog(
+            books_catalog, fuzzy_threshold=fuzzy_threshold
+        )
+        book_ids, match_stats = matcher.match_titles(work["book_title"])
+        report.update(match_stats)
+        work["book_id"] = book_ids
+    else:
+        cat = books_catalog.copy()
+        cat["_match_name"] = cat["name"].astype(str).str.strip()
+        cat = cat.sort_values("id").drop_duplicates(subset=["_match_name"], keep="first")
+        lookup = cat.set_index("_match_name")["id"]
+        work["book_id"] = work["book_title"].map(lookup)
+        matched = int(work["book_id"].notna().sum())
+        report["title_match_exact_normalized"] = matched
+        report["title_match_exact_core"] = 0
+        report["title_match_fuzzy"] = 0
+        report["title_match_unmatched"] = int(work["book_id"].isna().sum())
+
     work = work.dropna(subset=["book_id"])
     work["book_id"] = work["book_id"].astype("int64")
     report["rows_dropped_no_title_match"] = int(before_join - len(work))
@@ -322,6 +345,10 @@ def clean_interactions(
     df: pd.DataFrame,
     books_catalog: pd.DataFrame | None = None,
     valid_book_ids: set[int] | None = None,
+    *,
+    title_matcher: TitleMatcher | None = None,
+    fuzzy_threshold: int = 88,
+    enable_fuzzy_title_match: bool = True,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Build user — book — rating table.
 
@@ -341,7 +368,14 @@ def clean_interactions(
                 "Provide books_catalog to match titles to ids, or use a CSV with "
                 "user_id, book_id, rating columns."
             )
-        return _clean_interactions_title_labels(df, books_catalog, valid_book_ids)
+        return _clean_interactions_title_labels(
+            df,
+            books_catalog,
+            valid_book_ids,
+            title_matcher=title_matcher,
+            fuzzy_threshold=fuzzy_threshold,
+            enable_fuzzy=enable_fuzzy_title_match,
+        )
 
     cols = ", ".join(sorted(df.columns))
     raise ValueError(

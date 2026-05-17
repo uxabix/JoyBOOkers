@@ -10,3 +10,4 @@ numpy>=1.26
 matplotlib>=3.8
 seaborn>=0.13
 pyarrow>=14.0
+rapidfuzz>=3.0

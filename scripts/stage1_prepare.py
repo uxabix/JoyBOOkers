@@ -35,6 +35,7 @@ from bookrec.eda import (
     save_top_users,
 )
 from bookrec.paths import EDA_DIR, PROCESSED_DIR, RAW_DIR
+from bookrec.title_matching import TitleMatcher
 
 
 def _ensure_dirs() -> None:
@@ -86,6 +87,17 @@ def main() -> int:
     )
     parser.add_argument("--out", type=Path, default=PROCESSED_DIR, help="Processed output directory")
     parser.add_argument("--no-plots", action="store_true", help="Skip saving figures")
+    parser.add_argument(
+        "--no-fuzzy-title-match",
+        action="store_true",
+        help="Use legacy strip()-only exact title match (no normalization/fuzzy)",
+    )
+    parser.add_argument(
+        "--title-fuzzy-threshold",
+        type=int,
+        default=88,
+        help="Minimum rapidfuzz token_sort_ratio for fuzzy title match (default: 88)",
+    )
     args = parser.parse_args()
 
     _ensure_dirs()
@@ -147,11 +159,21 @@ def main() -> int:
     print("Building valid book id set...")
     valid_ids = set(books_clean["id"].astype("int64").unique())
 
+    title_matcher = None
+    if not args.no_fuzzy_title_match:
+        print("Building title matcher index...")
+        title_matcher = TitleMatcher.from_catalog(
+            books_clean, fuzzy_threshold=args.title_fuzzy_threshold
+        )
+
     print("Cleaning interactions...")
     interactions, inter_report = clean_interactions(
         ratings_raw,
         books_catalog=books_clean,
         valid_book_ids=valid_ids,
+        title_matcher=title_matcher,
+        fuzzy_threshold=args.title_fuzzy_threshold,
+        enable_fuzzy_title_match=not args.no_fuzzy_title_match,
     )
     summary["interactions_cleaning"] = inter_report
     del ratings_raw, valid_ids

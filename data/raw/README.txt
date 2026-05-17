@@ -12,7 +12,9 @@ Legacy single files are also supported when present:
 Ratings CSV layout (either):
   1) Matrix: user_id, book_id, rating [, timestamp]
   2) Kaggle text export: ID (user), Name (book title), Rating ("it was amazing", …)
-     — titles are matched to the book catalog after strip().
+     — titles are matched to the catalog via normalization, core-title keys, and
+       fuzzy matching (rapidfuzz, default threshold 88). Disable with
+       --no-fuzzy-title-match on stage1_prepare.py.
 
 Stage 1 loads every matching shard, concatenates in memory (no merged copy on disk),
 then cleans and writes outputs under data/processed/.
