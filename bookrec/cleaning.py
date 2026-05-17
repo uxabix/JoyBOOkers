@@ -15,7 +15,8 @@ def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
         s = str(c).strip().lower().replace(" ", "_").replace("-", "_")
         cols.append(s)
     out.columns = cols
-    return out
+    # Some shards repeat the same field under aliases (e.g. pagesNumber twice).
+    return out.loc[:, ~out.columns.duplicated(keep="first")]
 
 
 BOOK_COLUMN_ALIASES = {

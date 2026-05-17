@@ -6,5 +6,10 @@ RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 EDA_DIR = PROCESSED_DIR / "eda"
 
-DEFAULT_BOOKS_CSV = RAW_DIR / "book.csv"
-DEFAULT_RATINGS_CSV = RAW_DIR / "user-rating.csv"
+# Legacy single-file names (still supported when present).
+LEGACY_BOOKS_CSV = RAW_DIR / "book.csv"
+LEGACY_RATINGS_CSV = RAW_DIR / "user-rating.csv"
+
+# Default: load all Kaggle shards from data/raw/.
+BOOK_SHARD_GLOB = "book*.csv"
+RATING_SHARD_GLOB = "user_rating_*.csv"

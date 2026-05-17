@@ -119,7 +119,7 @@ def save_avg_book_rating_hist(books: pd.DataFrame, out_path: Path) -> None:
     fig, ax = plt.subplots()
     sns.histplot(r, bins=40, kde=True, ax=ax, color="teal")
     ax.set_xlabel("Average book rating (catalog)")
-    ax.set_title("Distribution of average ratings in book.csv")
+    ax.set_title("Distribution of average ratings in book catalog")
     fig.tight_layout()
     fig.savefig(out_path, bbox_inches="tight")
     plt.close(fig)
