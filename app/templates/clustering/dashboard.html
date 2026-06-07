@@ -9,6 +9,25 @@
 {% set badge = "K = " ~ (clustering.n_clusters if clustering and clustering.n_clusters else "?") %}
 {% include "partials/_page_header.html" %}
 
+{% if current_user and my_cluster_id is not none %}
+<div class="cluster-you-banner cluster-you-banner-{{ my_cluster_id }} mb-4">
+  <div class="d-flex flex-wrap align-items-center gap-3">
+    <div class="cluster-you-banner-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></div>
+    <div class="flex-grow-1">
+      <div class="cluster-you-banner-eyebrow">You are logged in as {{ current_user.nickname }}</div>
+      <div class="cluster-you-banner-title">Your cluster: <strong>Cluster {{ my_cluster_id }}</strong></div>
+      <p class="cluster-you-banner-desc mb-0">{{ my_cluster_label or "Assigned from your rating behaviour in the app." }}</p>
+    </div>
+    <a href="/me" class="btn btn-light btn-sm fw-semibold">My profile</a>
+  </div>
+</div>
+{% elif current_user %}
+<div class="alert alert-info mb-4">
+  <i class="bi bi-info-circle me-1"></i>
+  Logged in as <strong>{{ current_user.nickname }}</strong> — rate a book on <a href="/me" class="alert-link">your profile</a> to get assigned to a cluster.
+</div>
+{% endif %}
+
 {% if not reports_available %}
 <div class="alert alert-warning">
   <i class="bi bi-exclamation-triangle me-1"></i>

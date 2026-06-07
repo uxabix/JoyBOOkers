@@ -17,7 +17,7 @@
           <div class="mb-3">
             <label class="form-label" for="user_id">User ID <span class="text-danger">*</span></label>
             <input type="number" class="form-control" id="user_id" name="user_id" required min="1"
-                   placeholder="e.g. 1 or 1039">
+                   value="{{ prefill_user_id or '' }}" placeholder="e.g. 1 or 1039">
             <div class="form-text">
               <strong>Database ID</strong> (column «ID» in the table), not DS1 external id.
               Need &ge;{{ min_cf_ratings | default(3) }} ratings.
@@ -55,15 +55,25 @@
       <div class="table-responsive">
         <table class="table table-sm table-hover mb-0">
           <thead class="table-light">
-            <tr><th>ID (use this)</th><th>DS1 external</th><th>Ratings</th></tr>
+            <tr><th>ID (use this)</th><th>DS1 external</th><th>Ratings</th><th>Cluster</th><th></th></tr>
           </thead>
           <tbody>
             {% for u in users %}
-            <tr role="button" style="cursor:pointer"
-                onclick="document.getElementById('user_id').value='{{ u.id }}'">
-              <td><code class="text-primary">{{ u.id }}</code></td>
+            <tr>
+              <td role="button" style="cursor:pointer"
+                  onclick="document.getElementById('user_id').value='{{ u.id }}'">
+                <code class="text-primary">{{ u.id }}</code>
+              </td>
               <td class="small text-muted">{{ u.external_id }}</td>
               <td><span class="badge text-bg-success">{{ u.rating_count }}</span></td>
+              <td>
+                {% with cluster_id=u.cluster_id, cluster_label=u.cluster_label, compact=true %}
+                {% include "partials/_cluster_badge.html" %}
+                {% endwith %}
+              </td>
+              <td class="text-end">
+                <a href="/users/{{ u.id }}" class="btn btn-sm btn-outline-secondary">Profile</a>
+              </td>
             </tr>
             {% endfor %}
           </tbody>

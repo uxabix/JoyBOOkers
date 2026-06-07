@@ -52,9 +52,15 @@ class Settings(BaseSettings):
     default_recommendation_limit: int = 10
     min_cf_ratings_per_user: int = 3
     cf_candidate_limit: int = 2000
+    cold_start_book_count: int = 15
+
+    session_secret: str = "joybookers-dev-secret-change-in-production"
+    session_max_age: int = 60 * 60 * 24 * 30
 
     ml_eager_load: bool = True
     db_batch_size: int = 1000
+    clustering_features_dir: Path = PROC_FEATURES / "clustering"
+    clustering_report_path: Path = PROJECT_ROOT / "reports" / "features" / "clustering" / "clustering_features_report.json"
 
     templates_dir: Path = Path(__file__).resolve().parent / "templates"
     static_dir: Path = Path(__file__).resolve().parent / "static"

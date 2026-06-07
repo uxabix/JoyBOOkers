@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Dataset users — {{ app_name }}{% endblock %}
+{% block content %}
+{% set title = "Dataset users" %}
+{% set subtitle = "Browse DS1 Goodreads users loaded into the database — ratings, clusters, recommendations" %}
+{% set badge = result.total ~ " users" %}
+{% include "partials/_page_header.html" %}
+
+<form method="get" action="/users" class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label" for="q">Search</label>
+        <input type="search" class="form-control" id="q" name="q" value="{{ q or '' }}"
+               placeholder="External ID or display name">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="min_ratings">Min. ratings</label>
+        <input type="number" class="form-control" id="min_ratings" name="min_ratings"
+               value="{{ min_ratings }}" min="0">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-search me-1"></i>Search
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+
+{% if result.items %}
+<div class="table-responsive card border-0 shadow-sm">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>ID</th>
+        <th>DS1 external ID</th>
+        <th>Name</th>
+        <th>Ratings</th>
+        <th>Cluster</th>
+        <th class="text-end">Profile</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in result.items %}
+      <tr>
+        <td><code>{{ u.id }}</code></td>
+        <td class="small text-muted">{{ u.external_id }}</td>
+        <td>{{ u.display_name or "—" }}</td>
+        <td><span class="badge text-bg-success">{{ u.rating_count }}</span></td>
+        <td>
+          {% with cluster_id=u.cluster_id, cluster_label=u.cluster_label, compact=true %}
+          {% include "partials/_cluster_badge.html" %}
+          {% endwith %}
+        </td>
+        <td class="text-end">
+          <a href="/users/{{ u.id }}" class="btn btn-sm btn-outline-primary">View profile</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if result.pages > 1 %}
+<nav class="mt-4" aria-label="Users pagination">
+  <ul class="pagination justify-content-center">
+    <li class="page-item{% if result.page <= 1 %} disabled{% endif %}">
+      <a class="page-link" href="?q={{ q or '' }}&min_ratings={{ min_ratings }}&page={{ result.page - 1 }}">Previous</a>
+    </li>
+    <li class="page-item disabled">
+      <span class="page-link">Page {{ result.page }} / {{ result.pages }}</span>
+    </li>
+    <li class="page-item{% if result.page >= result.pages %} disabled{% endif %}">
+      <a class="page-link" href="?q={{ q or '' }}&min_ratings={{ min_ratings }}&page={{ result.page + 1 }}">Next</a>
+    </li>
+  </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="alert alert-info">
+  <i class="bi bi-info-circle me-1"></i>
+  No dataset users found. Run <code>python scripts/load_db.py --ratings-limit 50000</code> to import DS1 users.
+</div>
+{% endif %}
+{% endblock %}

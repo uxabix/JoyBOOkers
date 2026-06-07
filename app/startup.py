@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from sqlalchemy.engine.url import make_url
 
 from app.config import Settings
+from app.db.migrate import migrate_schema
 from app.db.session import configure_engine, dispose_engine, init_db
 from app.logging_config import get_logger, setup_logging
 from app.ml.registry import MLModelRegistry
@@ -36,6 +37,7 @@ def on_startup(app: FastAPI, settings: Settings) -> None:
     _ensure_sqlite_parent(settings)
     db_engine = configure_engine(settings.database_url, echo=settings.debug)
     init_db(db_engine)
+    migrate_schema(db_engine)
     app.state.db_engine = db_engine
     logger.info("Database ready: %s", settings.database_url)
 
@@ -53,6 +55,7 @@ def on_startup(app: FastAPI, settings: Settings) -> None:
     app.state.cf_engine = registry.cf_engine
     app.state.content_engine = registry.content_engine
     app.state.sentiment_engine = registry.sentiment_engine
+    app.state.clustering_engine = registry.clustering_engine
     app.state.settings = settings
 
     logger.info("=== startup complete ===")

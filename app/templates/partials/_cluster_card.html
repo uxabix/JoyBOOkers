@@ -1,0 +1,18 @@
+<div class="cluster-card cluster-card-{{ profile.cluster_id if profile.cluster_id is not none else 'none' }}">
+  <div class="cluster-card-icon">
+    <i class="bi bi-diagram-3-fill" aria-hidden="true"></i>
+  </div>
+  <div class="cluster-card-body">
+    <div class="cluster-card-eyebrow">
+      {% if profile.is_registered %}Your{% else %}This user's{% endif %} segment (K-Means)
+    </div>
+    {% if profile.cluster_id is not none %}
+    <div class="cluster-card-title">Cluster {{ profile.cluster_id }}</div>
+    <p class="cluster-card-desc mb-2">{{ profile.cluster_label or "Based on your rating activity and preferences." }}</p>
+    <a href="/clustering" class="btn btn-sm btn-outline-light">Learn about clusters</a>
+    {% else %}
+    <div class="cluster-card-title">Not assigned yet</div>
+    <p class="cluster-card-desc mb-0">Rate at least one book — your segment updates automatically after each rating.</p>
+    {% endif %}
+  </div>
+</div>

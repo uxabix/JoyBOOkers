@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}{{ profile.display_name or profile.external_id }} — {{ app_name }}{% endblock %}
+{% block content %}
+{% if not profile %}
+<div class="alert alert-warning">User not found. <a href="/users">Back to user list</a></div>
+{% else %}
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item"><a href="/users">Dataset users</a></li>
+    <li class="breadcrumb-item active" aria-current="page">#{{ profile.id }}</li>
+  </ol>
+</nav>
+
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+  <div>
+    <h1 class="h3 mb-1">
+      <i class="bi bi-person-badge me-1"></i>
+      {{ profile.display_name or ("User #" ~ profile.id) }}
+    </h1>
+    <p class="text-muted mb-0 small">
+      DS1 user &middot; ID <code>{{ profile.id }}</code> &middot; external <code>{{ profile.external_id }}</code>
+      &middot; {{ profile.rating_count }} rating{{ "s" if profile.rating_count != 1 else "" }}
+    </p>
+  </div>
+  <a href="/recommendations?user_id={{ profile.id }}" class="btn btn-primary">
+    <i class="bi bi-stars me-1"></i>Get recommendations
+  </a>
+</div>
+
+<div class="mb-4">
+  {% include "partials/_cluster_card.html" %}
+</div>
+
+<div class="row g-4 mb-5">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+        <span>Recommendations preview</span>
+        <button class="btn btn-sm btn-outline-primary"
+                hx-get="/users/{{ profile.id }}/recommendations"
+                hx-target="#user-recs"
+                hx-swap="innerHTML">
+          <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+      </div>
+      <div class="card-body p-0" id="user-recs">
+        {% with result=recommendations, empty_reason=none %}
+        {% include "recommendations/_results.html" %}
+        {% endwith %}
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold">User stats</div>
+      <div class="card-body">
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><th style="width:40%">Database ID</th><td><code>{{ profile.id }}</code></td></tr>
+            <tr><th>DS1 external ID</th><td><code>{{ profile.external_id }}</code></td></tr>
+            <tr><th>Display name</th><td>{{ profile.display_name or "—" }}</td></tr>
+            <tr><th>Ratings in DB</th><td>{{ profile.rating_count }}</td></tr>
+            <tr>
+              <th>Cluster</th>
+              <td>
+                {% with cluster_id=profile.cluster_id, cluster_label=profile.cluster_label %}
+                {% include "partials/_cluster_badge.html" %}
+                {% endwith %}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div>
+  <h2 class="h5 mb-3">Ratings</h2>
+  {% if ratings %}
+  <div class="card border-0 shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Book</th>
+            <th>Author</th>
+            <th class="text-end">Score</th>
+            <th class="text-end">Book</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in ratings %}
+          <tr>
+            <td>{{ r.book.title }}</td>
+            <td class="small">{{ r.book.author or "—" }}</td>
+            <td class="text-end"><span class="badge text-bg-warning">{{ "%.1f"|format(r.score) }} &#9733;</span></td>
+            <td class="text-end"><a href="/books/{{ r.book.id }}" class="btn btn-sm btn-outline-secondary">Open</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-secondary mb-0">This user has no ratings in the database.</div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

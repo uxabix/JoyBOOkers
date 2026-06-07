@@ -11,7 +11,10 @@ from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
 from app.ml.registry import MLModelRegistry
 from app.ml.sentiment import SentimentEngine
+from app.ml.user_clustering import UserClusteringEngine
 from app.services.book_service import BookService
+from app.services.clustering_service import ClusteringService
+from app.services.cold_start_service import ColdStartService
 from app.services.collaborative_filtering_service import CollaborativeFilteringService
 from app.services.content_recommendation_service import ContentRecommendationService
 from app.services.rating_service import RatingService
@@ -48,16 +51,37 @@ def get_sentiment_engine(request: Request) -> SentimentEngine:
     return _ensure_ml_loaded(request).sentiment_engine
 
 
+def get_clustering_engine(request: Request) -> UserClusteringEngine:
+    registry = _ensure_ml_loaded(request)
+    if not registry.clustering_engine.is_loaded:
+        registry.clustering_engine.load()
+    return registry.clustering_engine
+
+
 def get_book_service(db: Session = Depends(get_db)) -> BookService:
     return BookService(db)
 
 
-def get_user_service(db: Session = Depends(get_db)) -> UserService:
-    return UserService(db)
+def get_user_service(
+    db: Session = Depends(get_db),
+    clustering: UserClusteringEngine = Depends(get_clustering_engine),
+) -> UserService:
+    return UserService(db, clustering)
 
 
-def get_rating_service(db: Session = Depends(get_db)) -> RatingService:
-    return RatingService(db)
+def get_clustering_service(
+    db: Session = Depends(get_db),
+    engine: UserClusteringEngine = Depends(get_clustering_engine),
+    settings: Settings = Depends(get_settings_dep),
+) -> ClusteringService:
+    return ClusteringService(db, engine, settings)
+
+
+def get_rating_service(
+    db: Session = Depends(get_db),
+    clustering_service: ClusteringService = Depends(get_clustering_service),
+) -> RatingService:
+    return RatingService(db, clustering_service)
 
 
 def get_cf_service(
@@ -76,13 +100,22 @@ def get_content_service(
     return ContentRecommendationService(db, engine, settings)
 
 
+def get_cold_start_service(
+    db: Session = Depends(get_db),
+    engine: ContentRecommendationEngine = Depends(get_content_engine),
+    settings: Settings = Depends(get_settings_dep),
+) -> ColdStartService:
+    return ColdStartService(db, engine, settings)
+
+
 def get_recommendation_service(
     db: Session = Depends(get_db),
     cf_service: CollaborativeFilteringService = Depends(get_cf_service),
     content_service: ContentRecommendationService = Depends(get_content_service),
+    cold_start_service: ColdStartService = Depends(get_cold_start_service),
     settings: Settings = Depends(get_settings_dep),
 ) -> RecommendationService:
-    return RecommendationService(db, cf_service, content_service, settings)
+    return RecommendationService(db, cf_service, content_service, cold_start_service, settings)
 
 
 def get_sentiment_service(

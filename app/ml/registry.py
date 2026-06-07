@@ -11,6 +11,7 @@ from app.logging_config import get_logger
 from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
 from app.ml.sentiment import SentimentEngine
+from app.ml.user_clustering import UserClusteringEngine
 
 logger = get_logger(__name__)
 
@@ -29,6 +30,7 @@ class MLModelRegistry:
     cf_engine: CollaborativeFilteringEngine = field(init=False)
     content_engine: ContentRecommendationEngine = field(init=False)
     sentiment_engine: SentimentEngine = field(init=False)
+    clustering_engine: UserClusteringEngine = field(init=False)
     statuses: list[ModelStatus] = field(default_factory=list)
     _loaded: bool = False
 
@@ -40,6 +42,11 @@ class MLModelRegistry:
         )
         self.content_engine = ContentRecommendationEngine(content_path)
         self.sentiment_engine = SentimentEngine(self.settings.sentiment_model_path)
+        self.clustering_engine = UserClusteringEngine(
+            self.settings.clustering_model_path,
+            self.settings.clustering_features_dir,
+            self.settings.clustering_report_path,
+        )
 
     def _content_matrix_path(self) -> Path:
         if self.settings.content_tfidf_path.is_file():
@@ -51,7 +58,7 @@ class MLModelRegistry:
             ModelStatus("collaborative_filtering", str(self.settings.cf_model_path), False, "lazy load"),
             ModelStatus("content_tfidf", str(self._content_matrix_path()), False, "lazy load"),
             ModelStatus("sentiment", str(self.settings.sentiment_model_path), False, "lazy load"),
-            self._artifact_status("clustering", self.settings.clustering_model_path),
+            self._load_one("clustering", self.settings.clustering_model_path, self.clustering_engine.load),
         ]
 
     def ensure_loaded(self) -> None:
@@ -63,7 +70,7 @@ class MLModelRegistry:
             self._load_one("collaborative_filtering", self.settings.cf_model_path, self.cf_engine.load),
             self._load_one("content_tfidf", self._content_matrix_path(), self.content_engine.load),
             self._load_one("sentiment", self.settings.sentiment_model_path, self.sentiment_engine.load),
-            self._artifact_status("clustering", self.settings.clustering_model_path),
+            self._load_one("clustering", self.settings.clustering_model_path, self.clustering_engine.load),
         ]
         self._loaded = True
         loaded = sum(1 for s in self.statuses if s.loaded)

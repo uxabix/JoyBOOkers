@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse
 from app.config import Settings
 from app.dependencies import (
     get_book_service,
+    get_rating_service,
     get_recommendation_service,
     get_reports_service,
     get_sentiment_service,
@@ -20,7 +21,9 @@ from app.dependencies import (
 from app.schemas.book import BookSearchParams
 from app.schemas.sentiment import SentimentPredictRequest
 from app.schemas.user import UserCreate
+from app.ml.user_clustering import CLUSTER_LABELS
 from app.services.book_service import BookService
+from app.services.rating_service import RatingService
 from app.services.recommendation_service import RecommendationService
 from app.services.reports_service import ReportsService
 from app.services.sentiment_service import SentimentService
@@ -30,7 +33,14 @@ router = APIRouter()
 
 
 def _ctx(request: Request, settings: Settings, **extra):
-    return {"request": request, "app_name": settings.app_name, "version": settings.app_version, **extra}
+    current_user = getattr(request.state, "current_user", None)
+    return {
+        "request": request,
+        "app_name": settings.app_name,
+        "version": settings.app_version,
+        "current_user": current_user,
+        **extra,
+    }
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -114,20 +124,29 @@ def book_detail(
     book_id: int,
     book_service: BookService = Depends(get_book_service),
     rec_service: RecommendationService = Depends(get_recommendation_service),
+    rating_service: RatingService = Depends(get_rating_service),
     settings: Settings = Depends(get_settings_dep),
 ):
     book = book_service.get(book_id)
     similar = rec_service.similar_books(book_id, limit=6) if book else None
+    user_rating = None
+    profile = getattr(request.state, "current_user", None)
+    if profile and book:
+        for r in rating_service.list_for_user(profile.id):
+            if r.book_id == book_id:
+                user_rating = r
+                break
     return get_templates(request).TemplateResponse(
         request,
         "books/detail.html",
-        _ctx(request, settings, book=book, similar=similar),
+        _ctx(request, settings, book=book, similar=similar, user_rating=user_rating, book_id=book_id),
     )
 
 
 @router.get("/recommendations", response_class=HTMLResponse)
 def recommendations_page(
     request: Request,
+    user_id: int | None = Query(default=None),
     user_service: UserService = Depends(get_user_service),
     settings: Settings = Depends(get_settings_dep),
 ):
@@ -135,7 +154,13 @@ def recommendations_page(
     return get_templates(request).TemplateResponse(
         request,
         "recommendations/user.html",
-        _ctx(request, settings, users=users, min_cf_ratings=settings.min_cf_ratings_per_user),
+        _ctx(
+            request,
+            settings,
+            users=users,
+            min_cf_ratings=settings.min_cf_ratings_per_user,
+            prefill_user_id=user_id,
+        ),
     )
 
 
@@ -184,6 +209,11 @@ def clustering_dashboard(
     settings: Settings = Depends(get_settings_dep),
 ):
     ctx = reports.get_clustering_context()
+    current_user = getattr(request.state, "current_user", None)
+    my_cluster_id = current_user.cluster_id if current_user else None
+    chart_data = dict(ctx.get("chart_data", {}))
+    if my_cluster_id is not None:
+        chart_data["highlight_cluster_id"] = my_cluster_id
     return get_templates(request).TemplateResponse(
         request,
         "clustering/dashboard.html",
@@ -191,7 +221,10 @@ def clustering_dashboard(
             request,
             settings,
             **ctx,
-            chart_data_json=json.dumps(ctx.get("chart_data", {})),
+            my_cluster_id=my_cluster_id,
+            my_cluster_label=current_user.cluster_label if current_user else None,
+            cluster_labels=CLUSTER_LABELS,
+            chart_data_json=json.dumps(chart_data),
         ),
     )
 

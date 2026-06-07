@@ -1,0 +1,28 @@
+{% set bid = book_id if book_id is defined else book.id %}
+{% set current = user_rating.score if user_rating is defined and user_rating else none %}
+<div id="rating-widget-{{ bid }}" class="rating-widget">
+  {% if success %}
+  <div class="alert alert-success py-1 px-2 small mb-2">Saved!</div>
+  {% endif %}
+  <form class="d-flex align-items-center gap-2 flex-wrap"
+        hx-post="/me/rate"
+        hx-target="#rating-widget-{{ bid }}"
+        hx-swap="outerHTML">
+    <input type="hidden" name="book_id" value="{{ bid }}">
+    <div class="btn-group btn-group-sm" role="group" aria-label="Rate {{ bid }}">
+      {% for star in range(1, 6) %}
+      <button type="submit" name="score" value="{{ star }}"
+              class="btn {% if current and star <= current %}btn-warning{% else %}btn-outline-warning{% endif %}"
+              title="{{ star }} star{{ 's' if star != 1 else '' }}">
+        {{ star }}&#9733;
+      </button>
+      {% endfor %}
+    </div>
+    {% if current %}
+    <span class="small text-muted">Your rating: {{ "%.0f"|format(current) }}/5</span>
+    {% else %}
+    <span class="small text-muted">Rate this book</span>
+    {% endif %}
+    <span class="htmx-indicator spinner-border spinner-border-sm text-primary" role="status"></span>
+  </form>
+</div>

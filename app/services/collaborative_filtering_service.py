@@ -36,7 +36,8 @@ class CollaborativeFilteringService:
         if user is None:
             return []
 
-        if self.ratings.count_for_user(user_id) < self.settings.min_cf_ratings_per_user:
+        min_ratings = 0 if user.is_registered else self.settings.min_cf_ratings_per_user
+        if self.ratings.count_for_user(user_id) < min_ratings:
             return []
 
         if not self.engine.is_loaded and not self.engine.load():

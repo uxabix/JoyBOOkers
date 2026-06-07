@@ -18,20 +18,21 @@
       <tbody>
         {% if profiles.n_ratings %}
         {% for cid, _ in profiles.n_ratings.items()|sort %}
-        <tr>
-          <td><span class="badge text-bg-primary">Cluster {{ cid }}</span></td>
+        {% set cid_int = cid | int %}
+        {% set is_mine = my_cluster_id is not none and cid_int == my_cluster_id %}
+        <tr class="{% if is_mine %}cluster-row-mine table-warning{% endif %}">
+          <td>
+            <span class="cluster-badge cluster-badge-{{ cid_int }}">Cluster {{ cid }}</span>
+            {% if is_mine %}
+            <span class="badge text-bg-dark ms-1">You are here</span>
+            {% endif %}
+          </td>
           <td class="text-end">{{ sizes[cid] if sizes else "—" }}</td>
           <td class="text-end">{{ "%.1f"|format(profiles.n_ratings[cid]) }}</td>
           <td class="text-end">{{ "%.2f"|format(profiles.mean_rating[cid]) if profiles.mean_rating else "—" }}</td>
           <td class="text-end">{{ "%.3f"|format(profiles.std_rating[cid]) if profiles.std_rating else "—" }}</td>
-          <td class="small text-muted">
-            {% if profiles.n_ratings[cid] | float > 50 %}
-            Power users — high activity
-            {% elif profiles.mean_rating[cid] | float > 4.1 %}
-            Lenient occasional raters
-            {% else %}
-            Moderate activity
-            {% endif %}
+          <td class="small {% if is_mine %}fw-semibold{% else %}text-muted{% endif %}">
+            {{ cluster_labels[cid_int] if cluster_labels and cid_int in cluster_labels else "—" }}
           </td>
         </tr>
         {% endfor %}

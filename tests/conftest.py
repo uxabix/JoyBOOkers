@@ -13,7 +13,7 @@ from sqlalchemy.pool import StaticPool
 from app.config import Settings
 from app.db.base import Base
 from app.db import models  # noqa: F401
-from app.db.session import configure_engine, dispose_engine, get_db
+from app.db.session import dispose_engine, get_db
 from app.factory import create_app
 
 
@@ -40,7 +40,11 @@ def client() -> TestClient:
         log_dir=Path("logs"),
         ml_eager_load=False,
     )
-    configure_engine(settings.database_url)
+    import app.db.session as db_session
+
+    db_session._engine = engine
+    db_session._SessionLocal = TestingSessionLocal
+    db_session._database_url = settings.database_url
     app = create_app(settings)
     app.dependency_overrides[get_db] = override_get_db
 

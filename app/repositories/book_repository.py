@@ -6,6 +6,7 @@ from sqlalchemy import Select, func, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.models.book import Book, BookEnrichment
+from app.db.models.rating import Rating
 from app.repositories.base import BaseRepository
 
 
@@ -24,6 +25,25 @@ class BookRepository(BaseRepository[Book]):
     def get_by_source_id(self, source_book_id: str) -> Book | None:
         stmt = select(Book).where(Book.source_book_id == source_book_id)
         return self.session.scalars(stmt).first()
+
+    def list_starter_books(self, user_id: int, *, limit: int = 15) -> list[Book]:
+        rated_subq = select(Rating.book_id).where(Rating.user_id == user_id)
+        stmt = (
+            select(Book)
+            .where(Book.id.notin_(rated_subq))
+            .where(Book.avg_rating.isnot(None))
+            .order_by(Book.avg_rating.desc())
+            .limit(limit)
+        )
+        rows = list(self.session.scalars(stmt).all())
+        if len(rows) >= limit:
+            return rows
+        extra_stmt = select(Book).where(Book.id.notin_(rated_subq)).order_by(Book.title)
+        if rows:
+            extra_stmt = extra_stmt.where(Book.id.notin_([b.id for b in rows]))
+        extra = extra_stmt.limit(limit - len(rows))
+        rows.extend(self.session.scalars(extra).all())
+        return rows[:limit]
 
     def existing_source_ids(self, source_ids: list[str]) -> set[str]:
         if not source_ids:

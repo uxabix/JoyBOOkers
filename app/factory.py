@@ -6,9 +6,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
 from bookrec.paths import PROJECT_ROOT
 
+from app.auth.middleware import CurrentUserMiddleware
 from app.config import Settings, get_settings
 from app.errors import register_exception_handlers
 from app.logging_config import get_logger
@@ -53,6 +55,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
+    )
+
+    app.add_middleware(CurrentUserMiddleware)
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=settings.session_secret,
+        max_age=settings.session_max_age,
+        same_site="lax",
+        https_only=False,
     )
 
     register_static_mounts(app, settings)

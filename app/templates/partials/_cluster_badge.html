@@ -1,0 +1,13 @@
+{% if cluster_id is not none %}
+<span class="cluster-badge cluster-badge-{{ cluster_id }}" title="{{ cluster_label or ('Cluster ' ~ cluster_id) }}">
+  <i class="bi bi-diagram-3-fill me-1" aria-hidden="true"></i>
+  <span class="cluster-badge-id">Cluster {{ cluster_id }}</span>
+  {% if cluster_label %}
+  <span class="cluster-badge-label{% if compact %} d-none d-xl-inline{% endif %}"> — {{ cluster_label }}</span>
+  {% endif %}
+</span>
+{% elif show_empty %}
+<span class="cluster-badge cluster-badge-empty text-muted">
+  <i class="bi bi-diagram-3 me-1"></i>No cluster yet
+</span>
+{% endif %}

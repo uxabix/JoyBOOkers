@@ -32,6 +32,9 @@
             <a class="nav-link{% if request.url.path == '/books/similar' %} active{% endif %}" href="/books/similar">Similar</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link{% if request.url.path.startswith('/users') %} active{% endif %}" href="/users">Users</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link{% if request.url.path.startswith('/recommendations') %} active{% endif %}" href="/recommendations">Recommendations</a>
           </li>
           <li class="nav-item">
@@ -44,7 +47,35 @@
             <a class="nav-link{% if request.url.path.startswith('/analytics') %} active{% endif %}" href="/analytics">Analytics</a>
           </li>
         </ul>
-        <ul class="navbar-nav">
+        <ul class="navbar-nav align-items-lg-center gap-lg-1">
+          {% if current_user %}
+          <li class="nav-item d-flex align-items-center px-lg-1">
+            {% with cluster_id=current_user.cluster_id, cluster_label=current_user.cluster_label, compact=true %}
+            {% include "partials/_cluster_badge.html" %}
+            {% endwith %}
+          </li>
+          <li class="nav-item">
+            <a class="nav-link{% if request.url.path == '/me' %} active{% endif %}" href="/me">
+              <i class="bi bi-person-circle me-1"></i>{{ current_user.nickname }}
+            </a>
+          </li>
+          <li class="nav-item">
+            <form method="post" action="/logout" class="d-inline">
+              <button type="submit" class="btn btn-link nav-link py-1">Log out</button>
+            </form>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link{% if request.url.path == '/login' %} active{% endif %}" href="/login">
+              <i class="bi bi-box-arrow-in-right me-1"></i>Log in
+            </a>
+          </li>
+          <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+            <a class="btn btn-register-cta{% if request.url.path == '/register' %} active{% endif %}" href="/register">
+              <i class="bi bi-person-plus-fill me-1"></i>Register free
+            </a>
+          </li>
+          {% endif %}
           <li class="nav-item">
             <a class="nav-link" href="/docs" target="_blank" rel="noopener">
               <i class="bi bi-braces"></i> API

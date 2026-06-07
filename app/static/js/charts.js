@@ -7,15 +7,51 @@
 
   const palette = [
     "#0d6efd",
-    "#6610f2",
     "#198754",
     "#fd7e14",
+    "#6610f2",
     "#dc3545",
     "#0dcaf0",
     "#6f42c1",
   ];
 
-  function renderBar(canvasId, labels, values, label) {
+  function clusterIdFromLabel(label) {
+    const match = String(label).match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : -1;
+  }
+
+  function colorsForClusters(labels, highlightId) {
+    return labels.map(function (label, i) {
+      const cid = clusterIdFromLabel(label);
+      const base = palette[cid] || palette[i % palette.length];
+      if (highlightId === undefined || highlightId === null) {
+        return base;
+      }
+      return cid === highlightId ? base : base + "44";
+    });
+  }
+
+  function borderForClusters(labels, highlightId) {
+    return labels.map(function (label, i) {
+      const cid = clusterIdFromLabel(label);
+      if (highlightId === undefined || highlightId === null) {
+        return "transparent";
+      }
+      return cid === highlightId ? "#212529" : "transparent";
+    });
+  }
+
+  function borderWidthForClusters(labels, highlightId) {
+    return labels.map(function (label) {
+      const cid = clusterIdFromLabel(label);
+      if (highlightId === undefined || highlightId === null) {
+        return 0;
+      }
+      return cid === highlightId ? 3 : 0;
+    });
+  }
+
+  function renderBar(canvasId, labels, values, label, highlightId) {
     const el = document.getElementById(canvasId);
     if (!el || typeof Chart === "undefined") return;
     const ctx = el.getContext("2d");
@@ -27,7 +63,9 @@
           {
             label: label,
             data: values,
-            backgroundColor: palette.slice(0, labels.length),
+            backgroundColor: colorsForClusters(labels, highlightId),
+            borderColor: borderForClusters(labels, highlightId),
+            borderWidth: borderWidthForClusters(labels, highlightId),
           },
         ],
       },
@@ -40,7 +78,7 @@
     });
   }
 
-  function renderDoughnut(canvasId, labels, values) {
+  function renderDoughnut(canvasId, labels, values, highlightId) {
     const el = document.getElementById(canvasId);
     if (!el || typeof Chart === "undefined") return;
     const ctx = el.getContext("2d");
@@ -51,7 +89,9 @@
         datasets: [
           {
             data: values,
-            backgroundColor: palette.slice(0, labels.length),
+            backgroundColor: colorsForClusters(labels, highlightId),
+            borderColor: borderForClusters(labels, highlightId),
+            borderWidth: borderWidthForClusters(labels, highlightId),
           },
         ],
       },
@@ -113,11 +153,13 @@
   function initClustering() {
     const data = window.CHART_DATA;
     if (!data) return;
+    const highlightId = data.highlight_cluster_id;
     if (data.cluster_sizes) {
       renderDoughnut(
         "chart-cluster-sizes",
         data.cluster_sizes.labels,
-        data.cluster_sizes.values
+        data.cluster_sizes.values,
+        highlightId
       );
     }
     if (data.silhouette_by_k) {
@@ -133,7 +175,8 @@
         "chart-profile-ratings",
         data.profile_ratings.labels,
         data.profile_ratings.mean_ratings,
-        "Mean rating"
+        "Mean rating",
+        highlightId
       );
     }
   }
