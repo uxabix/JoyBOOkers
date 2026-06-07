@@ -1,5 +1,5 @@
-"""ASGI entrypoint — uvicorn main:app."""
+"""Legacy ASGI entrypoint — prefer: uvicorn app.main:app --reload"""
 
-from app.factory import create_app
+from app.main import app
 
-app = create_app()
+__all__ = ["app"]

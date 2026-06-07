@@ -37,7 +37,7 @@ def _ctx(request: Request, settings: Settings, **extra):
 def home(request: Request, settings: Settings = Depends(get_settings_dep)):
     reports = get_reports_service()
     analytics = reports.get_analytics_context()
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "index.html",
         _ctx(request, settings, metrics=analytics.get("metrics", {}), reports_available=analytics["reports_available"]),
@@ -55,7 +55,7 @@ def books_page(
 ):
     result = service.search(BookSearchParams(q=q, genre=genre, page=page, page_size=12))
     template = "books/_search_results.html" if request.headers.get("HX-Request") else "books/list.html"
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         template,
         _ctx(request, settings, result=result, q=q or "", genre=genre or "", page=page),
@@ -75,12 +75,12 @@ def similar_books_page(
     similar = rec_service.similar_books(book_id, limit=limit) if seed_book else None
     partial = request.headers.get("HX-Request")
     if partial and book_id:
-        return get_templates().TemplateResponse(
+        return get_templates(request).TemplateResponse(
             request,
             "books/_similar_results.html",
             _ctx(request, settings, seed_book=seed_book, similar=similar, book_id=book_id, limit=limit),
         )
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "books/similar.html",
         _ctx(request, settings, seed_book=seed_book, similar=similar, book_id=book_id or "", limit=limit),
@@ -98,7 +98,7 @@ def similar_books_submit(
 ):
     seed_book = book_service.get(book_id)
     similar = rec_service.similar_books(book_id, limit=limit) if seed_book else None
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "books/_similar_results.html",
         _ctx(request, settings, seed_book=seed_book, similar=similar, book_id=book_id, limit=limit),
@@ -115,7 +115,7 @@ def book_detail(
 ):
     book = book_service.get(book_id)
     similar = rec_service.similar_books(book_id, limit=6) if book else None
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "books/detail.html",
         _ctx(request, settings, book=book, similar=similar),
@@ -129,7 +129,7 @@ def recommendations_page(
     settings: Settings = Depends(get_settings_dep),
 ):
     users = user_service.list_recent(limit=15)
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "recommendations/user.html",
         _ctx(request, settings, users=users),
@@ -146,7 +146,7 @@ def recommendations_submit(
     settings: Settings = Depends(get_settings_dep),
 ):
     result = service.recommend_for_user(user_id, limit=limit, algorithm=algorithm)
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "recommendations/_results.html",
         _ctx(request, settings, result=result),
@@ -155,7 +155,7 @@ def recommendations_submit(
 
 @router.get("/sentiment", response_class=HTMLResponse)
 def sentiment_page(request: Request, settings: Settings = Depends(get_settings_dep)):
-    return get_templates().TemplateResponse(request, "sentiment/index.html", _ctx(request, settings))
+    return get_templates(request).TemplateResponse(request, "sentiment/index.html", _ctx(request, settings))
 
 
 @router.post("/sentiment", response_class=HTMLResponse)
@@ -166,7 +166,7 @@ def sentiment_submit(
     settings: Settings = Depends(get_settings_dep),
 ):
     prediction = service.predict(SentimentPredictRequest(text=text))
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "sentiment/_result.html",
         _ctx(request, settings, prediction=prediction, text=text),
@@ -180,7 +180,7 @@ def clustering_dashboard(
     settings: Settings = Depends(get_settings_dep),
 ):
     ctx = reports.get_clustering_context()
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "clustering/dashboard.html",
         _ctx(
@@ -199,7 +199,7 @@ def analytics_dashboard(
     settings: Settings = Depends(get_settings_dep),
 ):
     ctx = reports.get_analytics_context()
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "analytics/dashboard.html",
         _ctx(
@@ -219,7 +219,7 @@ def quick_create_user(
     service: UserService = Depends(get_user_service),
 ):
     user = service.get_or_create(UserCreate(external_id=external_id, display_name=display_name))
-    return get_templates().TemplateResponse(
+    return get_templates(request).TemplateResponse(
         request,
         "partials/user_created.html",
         {"request": request, "user": user},

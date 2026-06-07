@@ -24,6 +24,22 @@ class HealthResponse(BaseModel):
     database: str
 
 
+class ModelStatusItem(BaseModel):
+    name: str
+    path: str
+    loaded: bool
+    detail: str = ""
+
+
+class ReadinessResponse(BaseModel):
+    status: str
+    app: str
+    version: str
+    database: str
+    models: list[ModelStatusItem]
+    all_required_models_loaded: bool
+
+
 class PaginatedResponse(ORMModel, Generic[T]):
     items: list[T]
     total: int

@@ -20,11 +20,17 @@ from app.services.rating_service import RatingService
 from app.services.recommendation_service import RecommendationService
 from app.services.sentiment_service import SentimentService
 from app.services.reports_service import ReportsService
+from app.ml.registry import MLModelRegistry
 from app.services.user_service import UserService
+from app.templates_env import get_templates_engine
 
 
 def get_settings_dep() -> Settings:
     return get_settings()
+
+
+def get_ml_registry(request: Request) -> MLModelRegistry:
+    return request.app.state.ml_registry
 
 
 def get_cf_engine(request: Request) -> CollaborativeFilteringEngine:
@@ -89,9 +95,7 @@ def get_reports_service() -> ReportsService:
     return ReportsService(settings.reports_dir)
 
 
-@lru_cache
-def get_templates():
-    from fastapi.templating import Jinja2Templates
-
-    settings = get_settings()
-    return Jinja2Templates(directory=str(settings.templates_dir))
+def get_templates(request: Request):
+    if hasattr(request.app.state, "templates"):
+        return request.app.state.templates
+    return get_templates_engine()

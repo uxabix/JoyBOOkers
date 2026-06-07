@@ -1,4 +1,4 @@
-"""FastAPI application factory."""
+"""FastAPI application factory — wires routers, static files, and error handlers."""
 
 from __future__ import annotations
 
@@ -6,56 +6,27 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy import text
 
 from bookrec.paths import PROJECT_ROOT
 
 from app.config import Settings, get_settings
-from app.db.session import engine, init_db
-from app.logging_config import get_logger, setup_logging
-from app.ml.collaborative import CollaborativeFilteringEngine
-from app.ml.content_based import ContentRecommendationEngine
-from app.ml.sentiment import SentimentEngine
+from app.errors import register_exception_handlers
+from app.logging_config import get_logger
 from app.routers.api import api_router
 from app.routers.web import web_router
+from app.startup import on_shutdown, on_startup
 
 logger = get_logger(__name__)
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
-    settings = settings or get_settings()
-    setup_logging(level=settings.log_level, log_dir=settings.log_dir)
+def register_routers(app: FastAPI) -> None:
+    """Mount REST API v1 and server-rendered web UI."""
+    app.include_router(api_router, prefix="/api/v1")
+    app.include_router(web_router)
+    logger.debug("Routers registered: /api/v1/*, web pages")
 
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
-        logger.info("Starting %s v%s", settings.app_name, settings.app_version)
-        init_db()
 
-        app.state.settings = settings
-        app.state.cf_engine = CollaborativeFilteringEngine(settings.cf_model_path)
-        app.state.content_engine = ContentRecommendationEngine(
-            settings.content_tfidf_path
-            if settings.content_tfidf_path.exists()
-            else settings.content_bow_path,
-        )
-        app.state.sentiment_engine = SentimentEngine(settings.sentiment_model_path)
-
-        app.state.cf_engine.load()
-        app.state.content_engine.load()
-        app.state.sentiment_engine.load()
-
-        yield
-
-        engine.dispose()
-        logger.info("Shutdown complete")
-
-    app = FastAPI(
-        title=settings.app_name,
-        version=settings.app_version,
-        debug=settings.debug,
-        lifespan=lifespan,
-    )
-
+def register_static_mounts(app: FastAPI, settings: Settings) -> None:
     if settings.static_dir.is_dir():
         app.mount("/static", StaticFiles(directory=str(settings.static_dir)), name="static")
 
@@ -63,7 +34,29 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     if reports_eda.is_dir():
         app.mount("/reports-assets/eda", StaticFiles(directory=str(reports_eda)), name="reports-eda")
 
-    app.include_router(api_router, prefix="/api/v1")
-    app.include_router(web_router)
+
+def create_app(settings: Settings | None = None) -> FastAPI:
+    """Build a fully wired FastAPI application."""
+    settings = settings or get_settings()
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        on_startup(app, settings)
+        yield
+        on_shutdown(app)
+
+    app = FastAPI(
+        title=settings.app_name,
+        version=settings.app_version,
+        debug=settings.debug,
+        lifespan=lifespan,
+        docs_url="/docs",
+        redoc_url="/redoc",
+        openapi_url="/openapi.json",
+    )
+
+    register_static_mounts(app, settings)
+    register_routers(app)
+    register_exception_handlers(app)
 
     return app

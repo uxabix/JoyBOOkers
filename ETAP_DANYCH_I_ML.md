@@ -98,7 +98,7 @@ python scripts/export_reports.py
 ### API
 
 ```powershell
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 - WWW: http://127.0.0.1:8000  
@@ -472,7 +472,7 @@ python scripts/ml/run_ml_pipeline.py --module content --stages train evaluate
 python scripts/export_reports.py
 
 # API
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
 
 ---

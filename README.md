@@ -17,5 +17,5 @@ pip install -r requirements.txt
 python scripts/run_data_pipeline.py --stages all
 python scripts/ml/run_ml_pipeline.py --stages all
 python scripts/export_reports.py
-uvicorn main:app --reload
+uvicorn app.main:app --reload
 ```
