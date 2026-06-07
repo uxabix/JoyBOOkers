@@ -27,7 +27,7 @@ def get_current_user(
     if profile is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not logged in. Register or log in first.",
+            detail="Nie jesteś zalogowany. Zarejestruj się lub zaloguj.",
         )
     return profile
 

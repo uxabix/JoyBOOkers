@@ -3,8 +3,8 @@
 {% block content %}
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb small">
-    <li class="breadcrumb-item"><a href="/">Home</a></li>
-    <li class="breadcrumb-item"><a href="/authors">Authors</a></li>
+    <li class="breadcrumb-item"><a href="/">Strona główna</a></li>
+    <li class="breadcrumb-item"><a href="/authors">Autorzy</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ author_name | truncate(40) }}</li>
   </ol>
 </nav>
@@ -12,9 +12,9 @@
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
   <div>
     <h1 class="h3 mb-1"><i class="bi bi-pen me-1"></i>{{ author_name }}</h1>
-    <p class="text-muted mb-0 small">{{ result.total }} book{{ "s" if result.total != 1 else "" }} in catalog</p>
+    <p class="text-muted mb-0 small">{{ result.total }} książ{{ "ka" if result.total == 1 else "ek" }} w katalogu</p>
   </div>
-  <a href="/books?{{ book_query }}" class="btn btn-sm btn-outline-secondary">Open in book search</a>
+  <a href="/books?{{ book_query }}" class="btn btn-sm btn-outline-secondary">Otwórz w wyszukiwarce książek</a>
 </div>
 
 <div class="card shadow-sm border-0 mb-4">

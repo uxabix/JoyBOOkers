@@ -9,33 +9,33 @@
   <div class="card-body">
     <div class="row g-2 align-items-end">
       <div class="col-md-4">
-        <label class="form-label small mb-1" for="ratings_q">Search book / author</label>
+        <label class="form-label small mb-1" for="ratings_q">Szukaj książki / autora</label>
         <input type="search" class="form-control form-control-sm" id="ratings_q" name="q"
-               value="{{ ratings_q }}" placeholder="Title or author…">
+               value="{{ ratings_q }}" placeholder="Tytuł lub autor…">
       </div>
       <div class="col-6 col-md-2">
-        <label class="form-label small mb-1" for="ratings_min_score">Min score</label>
+        <label class="form-label small mb-1" for="ratings_min_score">Min. ocena</label>
         <input type="number" class="form-control form-control-sm" id="ratings_min_score" name="min_score"
                value="{{ ratings_min_score }}" min="1" max="5" step="0.5" placeholder="1">
       </div>
       <div class="col-6 col-md-2">
-        <label class="form-label small mb-1" for="ratings_max_score">Max score</label>
+        <label class="form-label small mb-1" for="ratings_max_score">Maks. ocena</label>
         <input type="number" class="form-control form-control-sm" id="ratings_max_score" name="max_score"
                value="{{ ratings_max_score }}" min="1" max="5" step="0.5" placeholder="5">
       </div>
       <div class="col-md-2">
-        <label class="form-label small mb-1" for="ratings_sort">Sort by</label>
+        <label class="form-label small mb-1" for="ratings_sort">Sortuj</label>
         <select class="form-select form-select-sm" id="ratings_sort" name="sort">
-          <option value="updated_desc"{% if ratings_sort == "updated_desc" %} selected{% endif %}>Newest first</option>
-          <option value="updated_asc"{% if ratings_sort == "updated_asc" %} selected{% endif %}>Oldest first</option>
-          <option value="score_desc"{% if ratings_sort == "score_desc" %} selected{% endif %}>Score high → low</option>
-          <option value="score_asc"{% if ratings_sort == "score_asc" %} selected{% endif %}>Score low → high</option>
-          <option value="title_asc"{% if ratings_sort == "title_asc" %} selected{% endif %}>Title A–Z</option>
-          <option value="title_desc"{% if ratings_sort == "title_desc" %} selected{% endif %}>Title Z–A</option>
+          <option value="updated_desc"{% if ratings_sort == "updated_desc" %} selected{% endif %}>Najnowsze</option>
+          <option value="updated_asc"{% if ratings_sort == "updated_asc" %} selected{% endif %}>Najstarsze</option>
+          <option value="score_desc"{% if ratings_sort == "score_desc" %} selected{% endif %}>Ocena malejąco</option>
+          <option value="score_asc"{% if ratings_sort == "score_asc" %} selected{% endif %}>Ocena rosnąco</option>
+          <option value="title_asc"{% if ratings_sort == "title_asc" %} selected{% endif %}>Tytuł A–Z</option>
+          <option value="title_desc"{% if ratings_sort == "title_desc" %} selected{% endif %}>Tytuł Z–A</option>
         </select>
       </div>
       <div class="col-md-2">
-        <label class="form-label small mb-1" for="ratings_page_size">Per page</label>
+        <label class="form-label small mb-1" for="ratings_page_size">Na stronę</label>
         <select class="form-select form-select-sm" id="ratings_page_size" name="page_size">
           {% for n in [10, 15, 25, 50] %}
           <option value="{{ n }}"{% if ratings_page_size == n %} selected{% endif %}>{{ n }}</option>
@@ -51,7 +51,7 @@
 <div class="card border-0 shadow-sm">
   <div class="card-header bg-white d-flex justify-content-between align-items-center py-2">
     <span class="small text-muted">
-      Showing {{ ratings_result.items | length }} of {{ ratings_result.total }} rating{{ "s" if ratings_result.total != 1 else "" }}
+      Wyświetlono {{ ratings_result.items | length }} z {{ ratings_result.total }} ocen
     </span>
     <span class="htmx-indicator spinner-border spinner-border-sm text-primary" role="status"></span>
   </div>
@@ -59,11 +59,11 @@
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
-          <th>Book</th>
-          <th>Author</th>
-          <th class="text-end">Score</th>
-          <th class="text-end">Rated</th>
-          <th class="text-end">Action</th>
+          <th>Książka</th>
+          <th>Autor</th>
+          <th class="text-end">Ocena</th>
+          <th class="text-end">Data</th>
+          <th class="text-end">Akcja</th>
         </tr>
       </thead>
       <tbody>
@@ -75,7 +75,7 @@
           <td class="text-end small text-muted">
             {% if r.rated_at %}{{ r.rated_at.strftime("%Y-%m-%d") }}{% else %}—{% endif %}
           </td>
-          <td class="text-end"><a href="/books/{{ r.book.id }}" class="btn btn-sm btn-outline-secondary">Change</a></td>
+          <td class="text-end"><a href="/books/{{ r.book.id }}" class="btn btn-sm btn-outline-secondary">Zmień</a></td>
         </tr>
         {% endfor %}
       </tbody>
@@ -84,20 +84,20 @@
 </div>
 
 {% if ratings_result.pages > 1 %}
-<nav class="mt-3" aria-label="Ratings pagination">
+<nav class="mt-3" aria-label="Paginacja ocen">
   <ul class="pagination pagination-sm justify-content-center mb-0">
     <li class="page-item{% if ratings_result.page <= 1 %} disabled{% endif %}">
       <button type="button" class="page-link"
               onclick="document.getElementById('ratings_page').value={{ ratings_result.page - 1 }}; htmx.trigger('#ratings-filter-form', 'submit');"
-              {% if ratings_result.page <= 1 %}disabled{% endif %}>Previous</button>
+              {% if ratings_result.page <= 1 %}disabled{% endif %}>Poprzednia</button>
     </li>
     <li class="page-item disabled">
-      <span class="page-link">Page {{ ratings_result.page }} / {{ ratings_result.pages }}</span>
+      <span class="page-link">Strona {{ ratings_result.page }} / {{ ratings_result.pages }}</span>
     </li>
     <li class="page-item{% if ratings_result.page >= ratings_result.pages %} disabled{% endif %}">
       <button type="button" class="page-link"
               onclick="document.getElementById('ratings_page').value={{ ratings_result.page + 1 }}; htmx.trigger('#ratings-filter-form', 'submit');"
-              {% if ratings_result.page >= ratings_result.pages %}disabled{% endif %}>Next</button>
+              {% if ratings_result.page >= ratings_result.pages %}disabled{% endif %}>Następna</button>
     </li>
   </ul>
 </nav>
@@ -107,13 +107,13 @@
 <div class="alert alert-info mb-0">
   <i class="bi bi-info-circle me-1"></i>
   {% if ratings_q or ratings_min_score or ratings_max_score %}
-  No ratings match your filters.
+  Brak ocen pasujących do filtrów.
   <button type="button" class="btn btn-link btn-sm p-0 align-baseline"
           onclick="document.getElementById('ratings_q').value=''; document.getElementById('ratings_min_score').value=''; document.getElementById('ratings_max_score').value=''; document.getElementById('ratings_page').value=1; htmx.trigger('#ratings-filter-form', 'submit');">
-    Clear filters
+    Wyczyść filtry
   </button>
   {% else %}
-  You haven't rated any books yet. Pick one from the suggestions above or <a href="/books" class="alert-link">browse the catalog</a>.
+  Nie oceniłeś/aś jeszcze żadnej książki. Wybierz coś z propozycji powyżej lub <a href="/books" class="alert-link">przeglądaj katalog</a>.
   {% endif %}
 </div>
 {% endif %}

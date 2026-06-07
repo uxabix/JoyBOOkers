@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}{{ book.title if book else "Book" }} — {{ app_name }}{% endblock %}
+{% block title %}{{ book.title if book else "Książka" }} — {{ app_name }}{% endblock %}
 {% block content %}
 {% if not book %}
 <div class="alert alert-warning">
-  <i class="bi bi-exclamation-triangle me-1"></i> Book not found.
-  <a href="/books" class="alert-link">Back to search</a>
+  <i class="bi bi-exclamation-triangle me-1"></i> Nie znaleziono książki.
+  <a href="/books" class="alert-link">Wróć do wyszukiwarki</a>
 </div>
 {% else %}
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb small">
-    <li class="breadcrumb-item"><a href="/">Home</a></li>
-    <li class="breadcrumb-item"><a href="/books">Books</a></li>
+    <li class="breadcrumb-item"><a href="/">Strona główna</a></li>
+    <li class="breadcrumb-item"><a href="/books">Książki</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ book.title | truncate(48) }}</li>
   </ol>
 </nav>
@@ -20,27 +20,27 @@
     {% if book.image_url %}
     <img src="{{ book.image_url }}" class="img-fluid rounded shadow-sm w-100" alt="{{ book.title }}">
     {% else %}
-    <div class="book-cover-placeholder" style="min-height:320px">No cover image</div>
+    <div class="book-cover-placeholder" style="min-height:320px">Brak okładki</div>
     {% endif %}
     {% if current_user %}
     <div class="card border-0 shadow-sm mb-3">
       <div class="card-body">
-        <h2 class="h6 text-uppercase text-muted mb-2">Your rating</h2>
+        <h2 class="h6 text-uppercase text-muted mb-2">Twoja ocena</h2>
         {% include "partials/_rating_widget.html" with context %}
       </div>
     </div>
     {% else %}
     <div class="alert alert-light border small mb-3">
-      <a href="/login">Log in</a> or <a href="/register">register</a> to rate this book and get personalised recommendations.
+      <a href="/login">Zaloguj się</a> lub <a href="/register">zarejestruj</a>, aby ocenić książkę i otrzymywać spersonalizowane rekomendacje.
     </div>
     {% endif %}
     <div class="d-grid gap-2 mt-3">
       <a href="/books/similar?book_id={{ book.id }}" class="btn btn-primary">
-        <i class="bi bi-diagram-3 me-1"></i>Find similar books
+        <i class="bi bi-diagram-3 me-1"></i>Znajdź podobne książki
       </a>
       {% if book.goodreads_url %}
       <a href="{{ book.goodreads_url }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">
-        View on Goodreads
+        Zobacz na Goodreads
       </a>
       {% endif %}
     </div>
@@ -50,40 +50,40 @@
     <p class="lead text-muted">
       {% if book.author %}
       <a href="/authors/by/{{ book.author | urlencode }}" class="text-muted text-decoration-none">{{ book.author }}</a>
-      {% else %}Unknown author{% endif %}
+      {% else %}Nieznany autor{% endif %}
     </p>
 
     <div class="d-flex flex-wrap gap-2 mb-3">
       {% if book.rating_count %}
-      <span class="badge text-bg-primary fs-6">{{ book.rating_count }} rating{{ "s" if book.rating_count != 1 else "" }} in DB</span>
+      <span class="badge text-bg-primary fs-6">{{ book.rating_count }} ocen w BD</span>
       {% endif %}
       {% if book.db_avg_rating %}
-      <span class="badge text-bg-success fs-6">DB avg {{ "%.2f"|format(book.db_avg_rating) }}&#9733;</span>
+      <span class="badge text-bg-success fs-6">Śr. BD {{ "%.2f"|format(book.db_avg_rating) }}&#9733;</span>
       {% endif %}
       {% if book.avg_rating %}
-      <span class="badge text-bg-warning fs-6">Catalog {{ "%.2f"|format(book.avg_rating) }}&#9733;</span>
+      <span class="badge text-bg-warning fs-6">Katalog {{ "%.2f"|format(book.avg_rating) }}&#9733;</span>
       {% endif %}
     </div>
 
     {% if book.description %}
     <div class="card border-0 bg-white shadow-sm mb-4">
       <div class="card-body">
-        <h2 class="h6 text-uppercase text-muted">Description</h2>
+        <h2 class="h6 text-uppercase text-muted">Opis</h2>
         <p class="mb-0">{{ book.description }}</p>
       </div>
     </div>
     {% endif %}
 
     <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header bg-white fw-semibold">Metadata</div>
+      <div class="card-header bg-white fw-semibold">Metadane</div>
       <div class="card-body p-0">
         <table class="table table-sm mb-0">
           <tbody>
-            <tr><th scope="row" class="ps-3" style="width:35%">Genre</th><td>{{ book.genre or "—" }}</td></tr>
-            <tr><th scope="row" class="ps-3">Pages</th><td>{{ book.pages or "—" }}</td></tr>
+            <tr><th scope="row" class="ps-3" style="width:35%">Gatunek</th><td>{{ book.genre or "—" }}</td></tr>
+            <tr><th scope="row" class="ps-3">Strony</th><td>{{ book.pages or "—" }}</td></tr>
             <tr><th scope="row" class="ps-3">ISBN</th><td>{{ book.isbn13 or book.isbn or "—" }}</td></tr>
-            <tr><th scope="row" class="ps-3">Source ID</th><td><code>{{ book.source_book_id }}</code></td></tr>
-            <tr><th scope="row" class="ps-3">Match key</th><td class="small text-muted">{{ book.match_key }}</td></tr>
+            <tr><th scope="row" class="ps-3">ID źródłowe</th><td><code>{{ book.source_book_id }}</code></td></tr>
+            <tr><th scope="row" class="ps-3">Klucz dopasowania</th><td class="small text-muted">{{ book.match_key }}</td></tr>
           </tbody>
         </table>
       </div>
@@ -91,12 +91,12 @@
 
     {% if book.enrichment %}
     <div class="card border-0 shadow-sm mb-4">
-      <div class="card-header bg-white fw-semibold">DS3 enrichment</div>
+      <div class="card-header bg-white fw-semibold">Wzbogacenie DS3</div>
       <div class="card-body">
-        <p class="small mb-2"><strong>Characters:</strong> {{ book.enrichment.characters or "—" }}</p>
-        <p class="small mb-2"><strong>Tags:</strong> {{ book.enrichment.tags or "—" }}</p>
+        <p class="small mb-2"><strong>Postacie:</strong> {{ book.enrichment.characters or "—" }}</p>
+        <p class="small mb-2"><strong>Tagi:</strong> {{ book.enrichment.tags or "—" }}</p>
         {% if book.enrichment.series %}
-        <p class="small mb-0"><strong>Series:</strong> {{ book.enrichment.series }}</p>
+        <p class="small mb-0"><strong>Seria:</strong> {{ book.enrichment.series }}</p>
         {% endif %}
       </div>
     </div>
@@ -107,8 +107,8 @@
 {% if similar and similar.items %}
 <div class="mt-5">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h4 mb-0">Similar books</h2>
-    <a href="/books/similar?book_id={{ book.id }}" class="btn btn-sm btn-outline-primary">View all</a>
+    <h2 class="h4 mb-0">Podobne książki</h2>
+    <a href="/books/similar?book_id={{ book.id }}" class="btn btn-sm btn-outline-primary">Zobacz wszystkie</a>
   </div>
   <div class="card border-0 shadow-sm">
     <div class="card-body p-0">

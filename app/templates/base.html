@@ -17,7 +17,7 @@
         <i class="bi bi-book-half me-1"></i>{{ app_name }}
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-              aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+              aria-controls="mainNav" aria-expanded="false" aria-label="Przełącz nawigację">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="mainNav">
@@ -41,7 +41,7 @@
             <a class="nav-link{% if request.url.path.startswith('/recommendations') %} active{% endif %}" href="/recommendations">Rekomendacje</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link{% if request.url.path.startswith('/sentiment') %} active{% endif %}" href="/sentiment">Sentiment</a>
+            <a class="nav-link{% if request.url.path.startswith('/sentiment') %} active{% endif %}" href="/sentiment">Sentyment</a>
           </li>
           <li class="nav-item">
             <a class="nav-link{% if request.url.path.startswith('/clustering') %} active{% endif %}" href="/clustering">Klasteryzacja</a>
@@ -64,18 +64,18 @@
           </li>
           <li class="nav-item">
             <form method="post" action="/logout" class="d-inline">
-              <button type="submit" class="btn btn-link nav-link py-1">Log out</button>
+              <button type="submit" class="btn btn-link nav-link py-1">Wyloguj</button>
             </form>
           </li>
           {% else %}
           <li class="nav-item">
             <a class="nav-link{% if request.url.path == '/login' %} active{% endif %}" href="/login">
-              <i class="bi bi-box-arrow-in-right me-1"></i>Log in
+              <i class="bi bi-box-arrow-in-right me-1"></i>Zaloguj się
             </a>
           </li>
           <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
             <a class="btn btn-register-cta{% if request.url.path == '/register' %} active{% endif %}" href="/register">
-              <i class="bi bi-person-plus-fill me-1"></i>Register free
+              <i class="bi bi-person-plus-fill me-1"></i>Zarejestruj się
             </a>
           </li>
           {% endif %}
@@ -95,7 +95,7 @@
 
   <footer class="site-footer">
     <div class="container d-flex flex-wrap justify-content-between align-items-center gap-2">
-      <span>{{ app_name }} &mdash; university book recommendation project</span>
+      <span>{{ app_name }} &mdash; projekt uniwersytecki rekomendacji książek</span>
       <span class="text-muted">v{{ version }} &middot; DS1 CF &middot; DS2+DS3 content &middot; DS4 sentiment</span>
     </div>
   </footer>

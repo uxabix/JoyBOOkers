@@ -29,7 +29,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    app_name: str = "Book Recommendation System"
+    app_name: str = "System rekomendacji książek"
     app_version: str = "0.1.0"
     debug: bool = False
 

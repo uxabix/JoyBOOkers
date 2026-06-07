@@ -1,7 +1,7 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <p class="text-muted small mb-0">{{ result.total }} author{{ "s" if result.total != 1 else "" }}</p>
+  <p class="text-muted small mb-0">{{ result.total }} autorów</p>
   {% if result.pages > 1 %}
-  <span class="badge text-bg-light text-dark">Page {{ result.page }} / {{ result.pages }}</span>
+  <span class="badge text-bg-light text-dark">Strona {{ result.page }} / {{ result.pages }}</span>
   {% endif %}
 </div>
 
@@ -10,11 +10,11 @@
   <table class="table table-hover align-middle mb-0">
     <thead class="table-light">
       <tr>
-        <th>Author</th>
-        <th class="text-end">Books</th>
-        <th class="text-end">Ratings (DB)</th>
-        <th class="text-end">DB avg</th>
-        <th class="text-end">Catalog avg</th>
+        <th>Autor</th>
+        <th class="text-end">Książki</th>
+        <th class="text-end">Oceny (BD)</th>
+        <th class="text-end">Śr. BD</th>
+        <th class="text-end">Śr. katalog</th>
         <th class="text-end"></th>
       </tr>
     </thead>
@@ -27,7 +27,7 @@
         <td class="text-end">{% if a.db_avg_rating %}{{ "%.2f"|format(a.db_avg_rating) }}&#9733;{% else %}—{% endif %}</td>
         <td class="text-end">{% if a.catalog_avg_rating %}{{ "%.2f"|format(a.catalog_avg_rating) }}&#9733;{% else %}—{% endif %}</td>
         <td class="text-end">
-          <a href="/authors/by/{{ a.name | urlencode }}" class="btn btn-sm btn-outline-primary">View books</a>
+          <a href="/authors/by/{{ a.name | urlencode }}" class="btn btn-sm btn-outline-primary">Zobacz książki</a>
         </td>
       </tr>
       {% endfor %}
@@ -40,5 +40,5 @@
 {% endwith %}
 
 {% else %}
-<div class="alert alert-info mb-0">No authors found. Load the book catalog into SQLite first.</div>
+<div class="alert alert-info mb-0">Nie znaleziono autorów. Najpierw załaduj katalog książek do SQLite.</div>
 {% endif %}

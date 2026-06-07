@@ -137,7 +137,7 @@
         "chart-ml-comparison",
         data.ml_comparison.labels,
         data.ml_comparison.values,
-        "ML metrics"
+        "Metryki ML"
       );
     }
     if (data.dataset_volumes) {
@@ -145,7 +145,7 @@
         "chart-dataset-volumes",
         data.dataset_volumes.labels,
         data.dataset_volumes.values,
-        "Row counts"
+        "Liczba wierszy"
       );
     }
   }
@@ -318,7 +318,7 @@
         "chart-silhouette-k",
         data.silhouette_by_k.labels,
         data.silhouette_by_k.values,
-        "Silhouette score"
+        "Współczynnik silhouette"
       );
     }
     if (data.profile_ratings) {
@@ -326,7 +326,7 @@
         "chart-profile-ratings",
         data.profile_ratings.labels,
         data.profile_ratings.mean_ratings,
-        "Mean rating",
+        "Średnia ocena",
         highlightId
       );
     }
@@ -335,7 +335,7 @@
         var block = data.rating_distributions[cid];
         var canvasId = "chart-rating-dist-" + cid;
         if (document.getElementById(canvasId)) {
-          renderBar(canvasId, block.labels, block.values, "Rating %");
+          renderBar(canvasId, block.labels, block.values, "Oceny %");
         }
       });
     }

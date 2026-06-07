@@ -101,7 +101,7 @@ class UserService:
         if self.repo.nickname_taken(payload.nickname):
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail=f"Nickname '{payload.nickname}' is already taken",
+                detail=f"Pseudonim „{payload.nickname}” jest już zajęty",
             )
         external_id = f"reg:{uuid.uuid4().hex[:12]}"
         user = User(
@@ -123,7 +123,7 @@ class UserService:
         if user is None or not user.is_registered:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found. Register first.",
+                detail="Użytkownik nie znaleziony. Zarejestruj się najpierw.",
             )
         return UserRead.model_validate(user)
 

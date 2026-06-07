@@ -1,25 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Log in — {{ app_name }}{% endblock %}
+{% block title %}Logowanie — {{ app_name }}{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-6 col-lg-5">
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
-        <h1 class="h4 mb-1">Log in</h1>
-        <p class="text-muted small mb-4">Enter your nickname to continue.</p>
+        <h1 class="h4 mb-1">Logowanie</h1>
+        <p class="text-muted small mb-4">Podaj pseudonim, aby kontynuować.</p>
         {% if error %}
         <div class="alert alert-danger py-2">{{ error }}</div>
         {% endif %}
         <form method="post" action="/login">
           <div class="mb-3">
-            <label for="nickname" class="form-label">Nickname</label>
+            <label for="nickname" class="form-label">Pseudonim</label>
             <input type="text" class="form-control" id="nickname" name="nickname" required
                    minlength="2" maxlength="32" autofocus>
           </div>
-          <button type="submit" class="btn btn-primary w-100">Log in</button>
+          <button type="submit" class="btn btn-primary w-100">Zaloguj się</button>
         </form>
         <p class="small text-muted mt-3 mb-0 text-center">
-          New here? <a href="/register">Create an account</a>
+          Nowy użytkownik? <a href="/register">Utwórz konto</a>
         </p>
       </div>
     </div>

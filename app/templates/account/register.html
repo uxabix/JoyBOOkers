@@ -1,27 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Register — {{ app_name }}{% endblock %}
+{% block title %}Rejestracja — {{ app_name }}{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-6 col-lg-5">
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
-        <h1 class="h4 mb-1">Create account</h1>
-        <p class="text-muted small mb-4">Pick a unique nickname — no email or password needed.</p>
+        <h1 class="h4 mb-1">Utwórz konto</h1>
+        <p class="text-muted small mb-4">Wybierz unikalny pseudonim — bez e-maila i hasła.</p>
         {% if error %}
         <div class="alert alert-danger py-2">{{ error }}</div>
         {% endif %}
         <form method="post" action="/register">
           <div class="mb-3">
-            <label for="nickname" class="form-label">Nickname</label>
+            <label for="nickname" class="form-label">Pseudonim</label>
             <input type="text" class="form-control" id="nickname" name="nickname" required
                    minlength="2" maxlength="32" pattern="[A-Za-z0-9_-]+"
-                   placeholder="e.g. bookworm_42" autofocus>
-            <div class="form-text">Letters, digits, underscore and hyphen only.</div>
+                   placeholder="np. czytelnik_42" autofocus>
+            <div class="form-text">Tylko litery, cyfry, podkreślenie i myślnik.</div>
           </div>
-          <button type="submit" class="btn btn-primary w-100">Register</button>
+          <button type="submit" class="btn btn-primary w-100">Zarejestruj się</button>
         </form>
         <p class="small text-muted mt-3 mb-0 text-center">
-          Already have an account? <a href="/login">Log in</a>
+          Masz już konto? <a href="/login">Zaloguj się</a>
         </p>
       </div>
     </div>

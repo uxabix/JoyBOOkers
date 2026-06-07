@@ -9,60 +9,60 @@
 <div class="row g-4">
   <div class="col-lg-5">
     <div class="card shadow-sm border-0">
-      <div class="card-header bg-white fw-semibold">Review text</div>
+      <div class="card-header bg-white fw-semibold">Tekst recenzji</div>
       <div class="card-body">
         <form hx-post="/sentiment"
               hx-target="#sentiment-result"
               hx-indicator="#sentiment-spinner">
           <div class="mb-3">
-            <label class="form-label" for="review-text">Paste a review</label>
+            <label class="form-label" for="review-text">Wklej recenzję</label>
             <textarea class="form-control" id="review-text" name="text" rows="8" required
-                      placeholder="I loved this book from start to finish..."></textarea>
+                      placeholder="Ta książka od pierwszej do ostatniej strony mnie zachwyciła…"></textarea>
           </div>
           <div class="d-flex gap-2 flex-wrap">
             <button type="submit" class="btn btn-primary">
-              <i class="bi bi-chat-quote me-1"></i>Analyze
+              <i class="bi bi-chat-quote me-1"></i>Analizuj
             </button>
             <button type="button" class="btn btn-outline-secondary btn-sm"
-                    onclick="document.getElementById('review-text').value='A wonderful story with great characters.'">
-              Sample positive
+                    onclick="document.getElementById('review-text').value='Wspaniała historia z świetnymi postaciami.'">
+              Przykład pozytywny
             </button>
             <button type="button" class="btn btn-outline-secondary btn-sm"
-                    onclick="document.getElementById('review-text').value='Boring and poorly written, waste of time.'">
-              Sample negative
+                    onclick="document.getElementById('review-text').value='Nudna i źle napisana, strata czasu.'">
+              Przykład negatywny
             </button>
           </div>
         </form>
         <div class="htmx-indicator text-primary pt-3" id="sentiment-spinner">
-          <div class="spinner-border spinner-border-sm me-2" role="status"></div>Classifying&hellip;
+          <div class="spinner-border spinner-border-sm me-2" role="status"></div>Klasyfikacja&hellip;
         </div>
       </div>
     </div>
 
     <div class="card border-0 bg-light mt-3">
       <div class="card-body small text-muted">
-        <strong>Label mapping:</strong> ratings &le;2&#9733; &rarr; negative, &ge;4&#9733; &rarr; positive.
-        Neutral 3&#9733; reviews are excluded from training.
+        <strong>Mapowanie etykiet:</strong> oceny &le;2&#9733; &rarr; negatywna, &ge;4&#9733; &rarr; pozytywna.
+        Neutralne recenzje 3&#9733; są wykluczone z treningu.
       </div>
     </div>
   </div>
 
   <div class="col-lg-7">
     <div class="card shadow-sm border-0 min-vh-25">
-      <div class="card-header bg-white fw-semibold">Prediction</div>
+      <div class="card-header bg-white fw-semibold">Predykcja</div>
       <div class="card-body" id="sentiment-result">
         <div class="text-muted text-center py-5">
           <i class="bi bi-chat-left-text display-4 d-block mb-3 opacity-50"></i>
-          Submit review text to see the model prediction.
+          Wyślij tekst recenzji, aby zobaczyć predykcję modelu.
         </div>
       </div>
     </div>
 
     <div class="card border-0 shadow-sm mt-3">
-      <div class="card-header bg-white fw-semibold small">Chart placeholder — class distribution (training)</div>
+      <div class="card-header bg-white fw-semibold small">Wykres — rozkład klas (trening)</div>
       <div class="card-body chart-placeholder">
-        <canvas id="chart-sentiment-placeholder" aria-label="Sentiment class distribution placeholder"></canvas>
-        <p class="text-muted small text-center mt-2 mb-0">See Analytics dashboard for full DS4 metrics.</p>
+        <canvas id="chart-sentiment-placeholder" aria-label="Rozkład klas sentymentu"></canvas>
+        <p class="text-muted small text-center mt-2 mb-0">Pełne metryki DS4 znajdziesz w panelu Analityka.</p>
       </div>
     </div>
   </div>

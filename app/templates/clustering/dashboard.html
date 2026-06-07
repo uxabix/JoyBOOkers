@@ -14,24 +14,24 @@
   <div class="d-flex flex-wrap align-items-center gap-3">
     <div class="cluster-you-banner-icon"><i class="bi bi-person-check-fill" aria-hidden="true"></i></div>
     <div class="flex-grow-1">
-      <div class="cluster-you-banner-eyebrow">You are logged in as {{ current_user.nickname }}</div>
-      <div class="cluster-you-banner-title">Your cluster: <strong>Cluster {{ my_cluster_id }}</strong></div>
-      <p class="cluster-you-banner-desc mb-0">{{ my_cluster_label or "Assigned from your rating behaviour in the app." }}</p>
+      <div class="cluster-you-banner-eyebrow">Zalogowano jako {{ current_user.nickname }}</div>
+      <div class="cluster-you-banner-title">Twój klaster: <strong>Klaster {{ my_cluster_id }}</strong></div>
+      <p class="cluster-you-banner-desc mb-0">{{ my_cluster_label or "Przypisany na podstawie Twojego zachowania ocen w aplikacji." }}</p>
     </div>
-    <a href="/me" class="btn btn-light btn-sm fw-semibold">My profile</a>
+    <a href="/me" class="btn btn-light btn-sm fw-semibold">Mój profil</a>
   </div>
 </div>
 {% elif current_user %}
 <div class="alert alert-info mb-4">
   <i class="bi bi-info-circle me-1"></i>
-  Logged in as <strong>{{ current_user.nickname }}</strong> — rate a book on <a href="/me" class="alert-link">your profile</a> to get assigned to a cluster.
+  Zalogowano jako <strong>{{ current_user.nickname }}</strong> — oceń książkę w <a href="/me" class="alert-link">swoim profilu</a>, aby otrzymać przypisanie do klastra.
 </div>
 {% endif %}
 
 {% if not reports_available %}
 <div class="alert alert-warning">
   <i class="bi bi-exclamation-triangle me-1"></i>
-  Reports not found. Run <code>python scripts/export_reports.py</code> after the ML pipeline.
+  Nie znaleziono raportów. Uruchom <code>python scripts/export_reports.py</code> po pipeline ML.
 </div>
 {% endif %}
 
@@ -41,7 +41,7 @@
   <div class="col-md-3 col-6">
     <div class="card stat-card h-100 shadow-sm">
       <div class="card-body">
-        <div class="text-muted small">Users clustered</div>
+        <div class="text-muted small">Użytk. w klastrach</div>
         <div class="fs-4 fw-semibold">{{ clustering.n_users if clustering else "—" }}</div>
       </div>
     </div>
@@ -49,7 +49,7 @@
   <div class="col-md-3 col-6">
     <div class="card stat-card stat-info h-100 shadow-sm">
       <div class="card-body">
-        <div class="text-muted small">Clusters (k)</div>
+        <div class="text-muted small">Klastry (k)</div>
         <div class="fs-4 fw-semibold">{{ clustering.n_clusters if clustering else "—" }}</div>
       </div>
     </div>
@@ -108,25 +108,25 @@
 <div class="row g-4 mb-4">
   <div class="col-lg-4">
     <div class="card shadow-sm border-0 h-100">
-      <div class="card-header bg-white fw-semibold">Cluster sizes</div>
+      <div class="card-header bg-white fw-semibold">Rozmiary klastrów</div>
       <div class="card-body chart-placeholder">
-        <canvas id="chart-cluster-sizes" aria-label="Cluster size distribution"></canvas>
+        <canvas id="chart-cluster-sizes" aria-label="Rozkład rozmiarów klastrów"></canvas>
       </div>
     </div>
   </div>
   <div class="col-lg-4">
     <div class="card shadow-sm border-0 h-100">
-      <div class="card-header bg-white fw-semibold">Silhouette by k</div>
+      <div class="card-header bg-white fw-semibold">Silhouette wg k</div>
       <div class="card-body chart-placeholder">
-        <canvas id="chart-silhouette-k" aria-label="Silhouette score by cluster count"></canvas>
+        <canvas id="chart-silhouette-k" aria-label="Współczynnik silhouette wg liczby klastrów"></canvas>
       </div>
     </div>
   </div>
   <div class="col-lg-4">
     <div class="card shadow-sm border-0 h-100">
-      <div class="card-header bg-white fw-semibold">Mean rating per cluster</div>
+      <div class="card-header bg-white fw-semibold">Średnia ocena wg klastra</div>
       <div class="card-body chart-placeholder">
-        <canvas id="chart-profile-ratings" aria-label="Mean rating by cluster"></canvas>
+        <canvas id="chart-profile-ratings" aria-label="Średnia ocena wg klastra"></canvas>
       </div>
     </div>
   </div>
@@ -147,7 +147,7 @@
 <div class="row g-4 mt-1">
   <div class="col-lg-6">
     <div class="card shadow-sm border-0">
-      <div class="card-header bg-white fw-semibold">Feature columns</div>
+      <div class="card-header bg-white fw-semibold">Kolumny cech</div>
       <div class="card-body">
         {% if features.feature_columns %}
         <ul class="list-group list-group-flush">
@@ -156,22 +156,22 @@
           {% endfor %}
         </ul>
         {% else %}
-        <p class="text-muted mb-0">No feature report loaded.</p>
+        <p class="text-muted mb-0">Nie załadowano raportu cech.</p>
         {% endif %}
       </div>
     </div>
   </div>
   <div class="col-lg-6">
     <div class="card shadow-sm border-0">
-      <div class="card-header bg-white fw-semibold">Training metadata</div>
+      <div class="card-header bg-white fw-semibold">Metadane treningu</div>
       <div class="card-body p-0">
         <table class="table table-sm mb-0">
           <tbody>
-            <tr><th class="ps-3">Algorithm</th><td>{{ train.algorithm or clustering.algorithm or "KMeans" }}</td></tr>
-            <tr><th class="ps-3">Min ratings</th><td>{{ features.min_ratings or "3" }}</td></tr>
-            <tr><th class="ps-3">Dropped users</th><td>{{ features.users_dropped_below_min_ratings or "—" }}</td></tr>
-            <tr><th class="ps-3">Activity q33</th><td>{{ features.activity_quantiles.q33 if features.activity_quantiles else "—" }}</td></tr>
-            <tr><th class="ps-3">Activity q66</th><td>{{ features.activity_quantiles.q66 if features.activity_quantiles else "—" }}</td></tr>
+            <tr><th class="ps-3">Algorytm</th><td>{{ train.algorithm or clustering.algorithm or "KMeans" }}</td></tr>
+            <tr><th class="ps-3">Min. ocen</th><td>{{ features.min_ratings or "3" }}</td></tr>
+            <tr><th class="ps-3">Odrzuconi użytk.</th><td>{{ features.users_dropped_below_min_ratings or "—" }}</td></tr>
+            <tr><th class="ps-3">Aktywność q33</th><td>{{ features.activity_quantiles.q33 if features.activity_quantiles else "—" }}</td></tr>
+            <tr><th class="ps-3">Aktywność q66</th><td>{{ features.activity_quantiles.q66 if features.activity_quantiles else "—" }}</td></tr>
           </tbody>
         </table>
       </div>

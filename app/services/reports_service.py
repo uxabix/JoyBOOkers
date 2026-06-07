@@ -41,38 +41,38 @@ def _build_feature_selection_rows(
 
     rows: list[dict[str, Any]] = [
         {
-            "module": "Content (DS2+DS3)",
+            "module": "Treść (DS2+DS3)",
             "selected": (
-                f"authors {content_stats.get('author_features', 3000)}, "
-                f"genres {content_stats.get('genre_features', 500)}, "
-                f"text TF-IDF {content_stats.get('content_features', DEFAULT_MAX_TEXT_FEATURES)}"
+                f"autorzy {content_stats.get('author_features', 3000)}, "
+                f"gatunki {content_stats.get('genre_features', 500)}, "
+                f"tekst TF-IDF {content_stats.get('content_features', DEFAULT_MAX_TEXT_FEATURES)}"
             ),
-            "limit": f"max {MAX_CONTENT_BOOKS:,} books; DS1 catalog excluded",
-            "note": "Cosine on L2-normalized sparse TF-IDF rows",
+            "limit": f"maks. {MAX_CONTENT_BOOKS:,} książek; katalog DS1 wykluczony",
+            "note": "Cosinus na rzadkich wierszach TF-IDF znormalizowanych L2",
         },
         {
-            "module": "Content tags (DS3)",
-            "selected": f"{content_stats.get('tag_features', 0)} tag dimensions",
-            "limit": "Merged via match_key",
-            "note": "Tags empty after merge — tag block omitted from combined matrix",
+            "module": "Tagi treści (DS3)",
+            "selected": f"{content_stats.get('tag_features', 0)} wymiarów tagów",
+            "limit": "Scalenie przez match_key",
+            "note": "Puste tagi po scaleniu — blok tagów pominięty w macierzy łączonej",
         },
         {
-            "module": "Sentiment (DS4)",
+            "module": "Sentyment (DS4)",
             "selected": f"TF-IDF max_features={sentiment_hp.get('max_features', 20_000)}",
             "limit": f"ngram_range={sentiment_hp.get('ngram_range', [1, 2])}",
-            "note": "Independent Amazon corpus; star-rating labels ≥4 / ≤2",
+            "note": "Niezależny korpus Amazon; etykiety z gwiazdek ≥4 / ≤2",
         },
         {
-            "module": "K-Means (DS1 users)",
-            "selected": ", ".join(clustering_feat.get("feature_columns", [])) or "7 behavioural features",
+            "module": "K-Means (użytk. DS1)",
+            "selected": ", ".join(clustering_feat.get("feature_columns", [])) or "7 cech behawioralnych",
             "limit": f"min_ratings={clustering_feat.get('min_ratings', 3)}",
-            "note": "Users below min ratings excluded from training",
+            "note": "Użytkownicy poniżej min. ocen wykluczeni z treningu",
         },
         {
-            "module": "Collaborative (SVD)",
-            "selected": "user_id × book_id → rating",
-            "limit": "DS1 interactions only",
-            "note": f"Catalog scope: {content_feat.get('n_books', '—')} content books separate from CF",
+            "module": "Współpracujący (SVD)",
+            "selected": "user_id × book_id → ocena",
+            "limit": "Tylko interakcje DS1",
+            "note": f"Zakres katalogu: {content_feat.get('n_books', '—')} książek treściowych oddzielnie od CF",
         },
     ]
     return rows

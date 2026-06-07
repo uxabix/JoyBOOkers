@@ -1,24 +1,27 @@
 {% set label_class = "sentiment-neutral" %}
+{% set label_pl = "Neutralny" %}
 {% if prediction.label == "positive" %}
 {% set label_class = "sentiment-positive" %}
+{% set label_pl = "Pozytywny" %}
 {% elif prediction.label == "negative" %}
 {% set label_class = "sentiment-negative" %}
+{% set label_pl = "Negatywny" %}
 {% endif %}
 
 <div class="card border-0 shadow-sm {{ label_class }}">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-start mb-3">
       <div>
-        <h3 class="h5 mb-1 text-capitalize">{{ prediction.label }}</h3>
+        <h3 class="h5 mb-1">{{ label_pl }}</h3>
         <p class="text-muted small mb-0">Model: {{ prediction.model }}</p>
       </div>
       {% if prediction.score is not none %}
       <span class="badge fs-6 {% if prediction.label == 'positive' %}text-bg-success{% elif prediction.label == 'negative' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
-        {{ "%.1f"|format(prediction.score * 100) }}% confidence
+        {{ "%.1f"|format(prediction.score * 100) }}% pewności
       </span>
       {% endif %}
     </div>
-    <h4 class="h6 text-uppercase text-muted">Input excerpt</h4>
+    <h4 class="h6 text-uppercase text-muted">Fragment wejścia</h4>
     <p class="small mb-0 fst-italic">"{{ text | truncate(400) }}"</p>
   </div>
 </div>

@@ -1,28 +1,38 @@
+{% set algo_labels = {
+  'auto': 'hybrydowy (auto)',
+  'hybrid': 'hybrydowy',
+  'collaborative': 'współpracujący (CF)',
+  'content': 'treściowy'
+} %}
+{% set weight_labels = {
+  'manual': 'ręczne',
+  'learned': 'uczone (Ridge)'
+} %}
 <div class="mb-3 d-flex flex-wrap gap-2 align-items-center">
-  <span class="badge text-bg-primary">algorithm: {{ result.algorithm }}</span>
+  <span class="badge text-bg-primary">algorytm: {{ algo_labels.get(result.algorithm, result.algorithm) }}</span>
   {% if result.user_id %}
-  <span class="text-muted small">user #{{ result.user_id }}</span>
+  <span class="text-muted small">użytkownik #{{ result.user_id }}</span>
   {% endif %}
-  <span class="text-muted small">{{ result.items | length }} item{{ "s" if result.items | length != 1 else "" }}</span>
+  <span class="text-muted small">{{ result.items | length }} pozycji</span>
 </div>
 {% if result.profile %}
 <div class="alert alert-light border small mb-3 py-2">
-  <div class="fw-semibold mb-1">User profile</div>
+  <div class="fw-semibold mb-1">Profil użytkownika</div>
   <div class="d-flex flex-wrap gap-2">
-    <span class="badge text-bg-secondary">ratings: {{ result.profile.rating_count }}</span>
-    <span class="badge text-bg-secondary">strength: {{ "%.0f"|format(result.profile.profile_strength * 100) }}%</span>
+    <span class="badge text-bg-secondary">oceny: {{ result.profile.rating_count }}</span>
+    <span class="badge text-bg-secondary">siła profilu: {{ "%.0f"|format(result.profile.profile_strength * 100) }}%</span>
   </div>
   {% if result.profile.cluster_label %}
-  <div class="mt-1 text-muted">{{ result.profile.cluster_label }} (cluster {{ result.profile.cluster_id }})</div>
+  <div class="mt-1 text-muted">{{ result.profile.cluster_label }} (klaster {{ result.profile.cluster_id }})</div>
   {% endif %}
   {% if result.profile.top_genres %}
-  <div class="mt-1 text-muted">Top genres: {{ result.profile.top_genres | join(", ") }}</div>
+  <div class="mt-1 text-muted">Ulubione gatunki: {{ result.profile.top_genres | join(", ") }}</div>
   {% endif %}
   {% if result.profile.genre_prior_active %}
-  <div class="mt-1 text-muted"><i class="bi bi-lightbulb me-1"></i>Cold-start genre priors active</div>
+  <div class="mt-1 text-muted"><i class="bi bi-lightbulb me-1"></i>Aktywne priory gatunków (cold start)</div>
   {% endif %}
   <div class="mt-1 text-muted">
-    Weights: <span class="badge text-bg-light border">{{ result.profile.weight_source }}</span>
+    Wagi: <span class="badge text-bg-light border">{{ weight_labels.get(result.profile.weight_source, result.profile.weight_source) }}</span>
     {% if result.profile.ml_signals %}<span class="ms-1">ML: {{ result.profile.ml_signals | join(", ") }}</span>{% endif %}
   </div>
 </div>

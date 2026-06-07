@@ -4,10 +4,10 @@
     <thead class="table-light">
       <tr>
         <th scope="col" style="width:3rem">#</th>
-        <th scope="col">Book</th>
-        <th scope="col">Author</th>
-        <th scope="col" class="text-end">Score</th>
-        <th scope="col" class="text-end">Action</th>
+        <th scope="col">Książka</th>
+        <th scope="col">Autor</th>
+        <th scope="col" class="text-end">Wynik</th>
+        <th scope="col" class="text-end">Akcja</th>
       </tr>
     </thead>
     <tbody>
@@ -25,8 +25,8 @@
           <span class="badge text-bg-primary">{{ "%.3f"|format(item.score) }}</span>
           {% if item.score_breakdown %}
           <div class="small text-muted mt-1" style="font-size:0.7rem">
-            C{{ "%.2f"|format(item.score_breakdown.content) }}
-            F{{ "%.2f"|format(item.score_breakdown.cf) }}
+            T{{ "%.2f"|format(item.score_breakdown.content) }}
+            CF{{ "%.2f"|format(item.score_breakdown.cf) }}
             K{{ "%.2f"|format(item.score_breakdown.cluster) }}
             P{{ "%.2f"|format(item.score_breakdown.popularity) }}
             G{{ "%.2f"|format(item.score_breakdown.genre) }}
@@ -41,7 +41,7 @@
           {% endif %}
         </td>
         <td class="text-end">
-          <a href="/books/similar?book_id={{ item.book.id }}" class="btn btn-sm btn-outline-secondary">Similar</a>
+          <a href="/books/similar?book_id={{ item.book.id }}" class="btn btn-sm btn-outline-secondary">Podobne</a>
         </td>
       </tr>
       {% endfor %}
@@ -51,6 +51,6 @@
 {% else %}
 <div class="alert alert-info mb-0">
   <i class="bi bi-info-circle me-1"></i>
-  No books in the result list.
+  Brak książek na liście wyników.
 </div>
 {% endif %}

@@ -4,15 +4,15 @@
   </div>
   <div class="cluster-card-body">
     <div class="cluster-card-eyebrow">
-      {% if profile.is_registered %}Your{% else %}This user's{% endif %} segment (K-Means)
+      {% if profile.is_registered %}Twój{% else %}Segment tego użytkownika{% endif %} (K-Means)
     </div>
     {% if profile.cluster_id is not none %}
-    <div class="cluster-card-title">Cluster {{ profile.cluster_id }}</div>
-    <p class="cluster-card-desc mb-2">{{ profile.cluster_label or "Based on your rating activity and preferences." }}</p>
-    <a href="/clustering" class="btn btn-sm btn-outline-light">Learn about clusters</a>
+    <div class="cluster-card-title">Klaster {{ profile.cluster_id }}</div>
+    <p class="cluster-card-desc mb-2">{{ profile.cluster_label or "Na podstawie Twojej aktywności ocen i preferencji." }}</p>
+    <a href="/clustering" class="btn btn-sm btn-outline-light">Dowiedz się o klastrach</a>
     {% else %}
-    <div class="cluster-card-title">Not assigned yet</div>
-    <p class="cluster-card-desc mb-0">Rate at least one book — your segment updates automatically after each rating.</p>
+    <div class="cluster-card-title">Jeszcze nie przypisany</div>
+    <p class="cluster-card-desc mb-0">Oceń co najmniej jedną książkę — segment aktualizuje się automatycznie po każdej ocenie.</p>
     {% endif %}
   </div>
 </div>

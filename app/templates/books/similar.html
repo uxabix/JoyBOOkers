@@ -1,36 +1,36 @@
 {% extends "base.html" %}
-{% block title %}Similar books — {{ app_name }}{% endblock %}
+{% block title %}Podobne książki — {{ app_name }}{% endblock %}
 {% block content %}
-{% set title = "Similar books" %}
-{% set subtitle = "Content-based neighbors via TF-IDF cosine similarity (DS2 + DS3)" %}
+{% set title = "Podobne książki" %}
+{% set subtitle = "Sąsiedzi treściowe przez podobieństwo cosinusowe TF-IDF (DS2 + DS3)" %}
 {% set badge = "TF-IDF" %}
 {% include "partials/_page_header.html" %}
 
 <div class="row g-4">
   <div class="col-lg-4">
     <div class="card shadow-sm border-0">
-      <div class="card-header bg-white fw-semibold">Seed book</div>
+      <div class="card-header bg-white fw-semibold">Książka bazowa</div>
       <div class="card-body">
         <form hx-post="/books/similar"
               hx-target="#similar-results"
               hx-indicator="#similar-spinner">
           <div class="mb-3">
-            <label class="form-label" for="book_id">Book ID (database)</label>
+            <label class="form-label" for="book_id">ID książki (baza danych)</label>
             <input type="number" class="form-control" id="book_id" name="book_id"
-                   value="{{ book_id }}" required min="1" placeholder="e.g. 42">
-            <div class="form-text">Find the ID on a book detail page or search results.</div>
+                   value="{{ book_id }}" required min="1" placeholder="np. 42">
+            <div class="form-text">ID znajdziesz na stronie książki lub w wynikach wyszukiwania.</div>
           </div>
           <div class="mb-3">
-            <label class="form-label" for="limit">Top-K neighbors</label>
+            <label class="form-label" for="limit">Top-K sąsiadów</label>
             <input type="number" class="form-control" id="limit" name="limit"
                    value="{{ limit }}" min="1" max="50">
           </div>
           <button type="submit" class="btn btn-primary w-100">
-            <i class="bi bi-diagram-3 me-1"></i>Compute similarity
+            <i class="bi bi-diagram-3 me-1"></i>Oblicz podobieństwo
           </button>
         </form>
         <div class="htmx-indicator text-primary pt-3" id="similar-spinner">
-          <div class="spinner-border spinner-border-sm me-2" role="status"></div>Computing&hellip;
+          <div class="spinner-border spinner-border-sm me-2" role="status"></div>Obliczanie&hellip;
         </div>
       </div>
     </div>
@@ -38,10 +38,10 @@
     {% if seed_book %}
     <div class="card shadow-sm border-0 mt-3">
       <div class="card-body">
-        <h6 class="card-subtitle text-muted mb-2">Current seed</h6>
+        <h6 class="card-subtitle text-muted mb-2">Aktualna baza</h6>
         <p class="fw-semibold mb-1">{{ seed_book.title }}</p>
         <p class="small text-muted mb-2">{{ seed_book.author }}</p>
-        <a href="/books/{{ seed_book.id }}" class="btn btn-sm btn-outline-secondary">Open detail</a>
+        <a href="/books/{{ seed_book.id }}" class="btn btn-sm btn-outline-secondary">Otwórz szczegóły</a>
       </div>
     </div>
     {% endif %}
@@ -50,8 +50,8 @@
   <div class="col-lg-8">
     <div class="card shadow-sm border-0">
       <div class="card-header bg-white fw-semibold d-flex justify-content-between">
-        <span>Results</span>
-        <span class="badge text-bg-secondary">algorithm: content</span>
+        <span>Wyniki</span>
+        <span class="badge text-bg-secondary">algorytm: treściowy</span>
       </div>
       <div class="card-body" id="similar-results">
         {% include "books/_similar_results.html" %}

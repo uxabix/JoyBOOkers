@@ -1,27 +1,27 @@
 {% extends "base.html" %}
-{% block title %}Dataset users — {{ app_name }}{% endblock %}
+{% block title %}Użytkownicy zbioru — {{ app_name }}{% endblock %}
 {% block content %}
-{% set title = "Dataset users" %}
-{% set subtitle = "Browse DS1 Goodreads users loaded into the database — ratings, clusters, recommendations" %}
-{% set badge = result.total ~ " users" %}
+{% set title = "Użytkownicy zbioru" %}
+{% set subtitle = "Przegląd użytkowników Goodreads DS1 w bazie — oceny, klastry, rekomendacje" %}
+{% set badge = result.total ~ " użytk." %}
 {% include "partials/_page_header.html" %}
 
 <form method="get" action="/users" class="card border-0 shadow-sm mb-4">
   <div class="card-body">
     <div class="row g-3 align-items-end">
       <div class="col-md-5">
-        <label class="form-label" for="q">Search</label>
+        <label class="form-label" for="q">Szukaj</label>
         <input type="search" class="form-control" id="q" name="q" value="{{ q or '' }}"
-               placeholder="External ID or display name">
+               placeholder="Zewnętrzne ID lub nazwa wyświetlana">
       </div>
       <div class="col-md-3">
-        <label class="form-label" for="min_ratings">Min. ratings</label>
+        <label class="form-label" for="min_ratings">Min. ocen</label>
         <input type="number" class="form-control" id="min_ratings" name="min_ratings"
                value="{{ min_ratings }}" min="0">
       </div>
       <div class="col-md-2">
         <button type="submit" class="btn btn-primary w-100">
-          <i class="bi bi-search me-1"></i>Search
+          <i class="bi bi-search me-1"></i>Szukaj
         </button>
       </div>
     </div>
@@ -34,11 +34,11 @@
     <thead class="table-light">
       <tr>
         <th>ID</th>
-        <th>DS1 external ID</th>
-        <th>Name</th>
-        <th>Ratings</th>
-        <th>Cluster</th>
-        <th class="text-end">Profile</th>
+        <th>DS1 zewnętrzne ID</th>
+        <th>Nazwa</th>
+        <th>Oceny</th>
+        <th>Klaster</th>
+        <th class="text-end">Profil</th>
       </tr>
     </thead>
     <tbody>
@@ -54,7 +54,7 @@
           {% endwith %}
         </td>
         <td class="text-end">
-          <a href="/users/{{ u.id }}" class="btn btn-sm btn-outline-primary">View profile</a>
+          <a href="/users/{{ u.id }}" class="btn btn-sm btn-outline-primary">Zobacz profil</a>
         </td>
       </tr>
       {% endfor %}
@@ -63,16 +63,16 @@
 </div>
 
 {% if result.pages > 1 %}
-<nav class="mt-4" aria-label="Users pagination">
+<nav class="mt-4" aria-label="Paginacja użytkowników">
   <ul class="pagination justify-content-center">
     <li class="page-item{% if result.page <= 1 %} disabled{% endif %}">
-      <a class="page-link" href="?q={{ q or '' }}&min_ratings={{ min_ratings }}&page={{ result.page - 1 }}">Previous</a>
+      <a class="page-link" href="?q={{ q or '' }}&min_ratings={{ min_ratings }}&page={{ result.page - 1 }}">Poprzednia</a>
     </li>
     <li class="page-item disabled">
-      <span class="page-link">Page {{ result.page }} / {{ result.pages }}</span>
+      <span class="page-link">Strona {{ result.page }} / {{ result.pages }}</span>
     </li>
     <li class="page-item{% if result.page >= result.pages %} disabled{% endif %}">
-      <a class="page-link" href="?q={{ q or '' }}&min_ratings={{ min_ratings }}&page={{ result.page + 1 }}">Next</a>
+      <a class="page-link" href="?q={{ q or '' }}&min_ratings={{ min_ratings }}&page={{ result.page + 1 }}">Następna</a>
     </li>
   </ul>
 </nav>
@@ -81,7 +81,7 @@
 {% else %}
 <div class="alert alert-info">
   <i class="bi bi-info-circle me-1"></i>
-  No dataset users found. Run <code>python scripts/load_db.py --ratings-limit 50000</code> to import DS1 users.
+  Nie znaleziono użytkowników zbioru. Uruchom <code>python scripts/load_db.py --ratings-limit 50000</code>, aby zaimportować użytkowników DS1.
 </div>
 {% endif %}
 {% endblock %}

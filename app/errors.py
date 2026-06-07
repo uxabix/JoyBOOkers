@@ -29,7 +29,7 @@ def _templates(request: Request):
 
 def _app_name(request: Request) -> str:
     settings = getattr(request.app.state, "settings", None)
-    return settings.app_name if settings else "Book Recommendation System"
+    return settings.app_name if settings else "System rekomendacji książek"
 
 
 def register_exception_handlers(app: FastAPI) -> None:

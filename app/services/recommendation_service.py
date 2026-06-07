@@ -139,21 +139,21 @@ class RecommendationService:
         user = self.users.get(user_id)
         if user is None:
             return (
-                f"User #{user_id} not found. Use the internal database ID from the table below "
-                "(not the DS1 external id)."
+                f"Użytkownik #{user_id} nie istnieje. Użyj wewnętrznego ID z bazy z tabeli poniżej "
+                "(nie zewnętrznego ID DS1)."
             )
         profile = self.profile_builder.build(user_id)
         if profile is None:
-            return f"User #{user_id} not found."
+            return f"Użytkownik #{user_id} nie istnieje."
 
         if not self.books.list_starter_books(user_id, limit=1):
             return (
-                "The book catalog is empty. Run `python scripts/load_db.py` to load books, "
-                "then try again."
+                "Katalog książek jest pusty. Uruchom `python scripts/load_db.py`, "
+                "aby załadować książki, i spróbuj ponownie."
             )
         return (
-            "Hybrid scoring ran but no catalog matches were found for the candidate set. "
-            "Try another user or refresh after rating more books."
+            "Scoring hybrydowy zakończył się, ale nie znaleziono dopasowań w katalogu. "
+            "Spróbuj innego użytkownika lub oceń więcej książek i odśwież wynik."
         )
 
     def similar_books(self, book_id: int, *, limit: int | None = None) -> RecommendationResponse:

@@ -20,30 +20,32 @@ def build_explanations(
     if breakdown.get("content", 0) >= threshold and profile.rated_books:
         genres = list(profile.genre_weights.keys())[:2]
         if genres:
-            out.append(f"Similar to books you rated ({', '.join(genres)})")
+            out.append(f"Podobne do książek, które oceniłeś/aś ({', '.join(genres)})")
         else:
-            out.append("Similar to books you rated (content match)")
+            out.append("Podobne do książek, które oceniłeś/aś (dopasowanie treści)")
 
     if breakdown.get("cf", 0) >= threshold and profile.cf_available:
-        out.append("Users with similar tastes rated this highly (collaborative filtering)")
+        out.append("Użytkownicy o podobnych gustach wysoko ocenili tę pozycję (filtrowanie współpracujące)")
 
     if breakdown.get("cluster", 0) >= threshold:
-        label = profile.cluster_label or f"cluster {profile.cluster_id}"
-        out.append(f"Popular among readers like you ({label})")
+        label = profile.cluster_label or f"klaster {profile.cluster_id}"
+        out.append(f"Popularne wśród czytelników podobnych do Ciebie ({label})")
 
     if breakdown.get("pop", 0) >= threshold and top_key == "pop":
-        out.append("Frequently rated in the catalog")
+        out.append("Często oceniana w katalogu")
 
     if breakdown.get("genre", 0) >= threshold:
         if profile.rated_books and profile.genre_weights:
             top = max(profile.genre_weights, key=profile.genre_weights.get)
-            out.append(f"Matches your preference for {top}")
+            out.append(f"Pasuje do Twojej preferencji: {top}")
         elif book_genre:
-            out.append(f"Fits popular genres in your reader profile ({book_genre.split(',')[0].strip()})")
+            out.append(
+                f"Pasuje do popularnych gatunków w Twoim profilu ({book_genre.split(',')[0].strip()})"
+            )
         else:
-            out.append("Aligns with genre trends in your reader cluster")
+            out.append("Zgodne z trendami gatunkowymi w Twoim klastrze czytelniczym")
 
     if not out and breakdown.get("pop", 0) > 0:
-        out.append("Recommended based on catalog popularity and your reader profile")
+        out.append("Rekomendacja na podstawie popularności w katalogu i Twojego profilu czytelnika")
 
     return out[:3]

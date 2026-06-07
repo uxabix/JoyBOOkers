@@ -1,20 +1,20 @@
 {% extends "base.html" %}
-{% block title %}My profile — {{ app_name }}{% endblock %}
+{% block title %}Mój profil — {{ app_name }}{% endblock %}
 {% block content %}
 <nav aria-label="breadcrumb" class="mb-3">
   <ol class="breadcrumb small">
-    <li class="breadcrumb-item"><a href="/">Home</a></li>
-    <li class="breadcrumb-item active" aria-current="page">My profile</li>
+    <li class="breadcrumb-item"><a href="/">Strona główna</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Mój profil</li>
   </ol>
 </nav>
 
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
   <div>
     <h1 class="h3 mb-1"><i class="bi bi-person-circle me-1"></i>{{ profile.nickname }}</h1>
-    <p class="text-muted mb-0 small">Registered user &middot; {{ profile.rating_count }} rating{{ "s" if profile.rating_count != 1 else "" }}</p>
+    <p class="text-muted mb-0 small">Użytkownik zarejestrowany &middot; {{ profile.rating_count }} ocen</p>
   </div>
   <form method="post" action="/logout" class="m-0">
-    <button type="submit" class="btn btn-outline-secondary btn-sm">Log out</button>
+    <button type="submit" class="btn btn-outline-secondary btn-sm">Wyloguj</button>
   </form>
 </div>
 
@@ -24,11 +24,11 @@
 
 <div class="card border-0 shadow-sm mb-4">
   <div class="card-body">
-    <h2 class="h6 text-uppercase text-muted">How it works</h2>
+    <h2 class="h6 text-uppercase text-muted">Jak to działa</h2>
     <ul class="small mb-0">
-      <li>Rate books below or from any book page — recommendations update automatically.</li>
-      <li>With no ratings yet, we suggest popular titles to get you started.</li>
-      <li>Your cluster badge in the top bar updates after each rating (K-Means segmentation).</li>
+      <li>Oceń książki poniżej lub na stronie książki — rekomendacje aktualizują się automatycznie.</li>
+      <li>Bez ocen proponujemy popularne tytuły na start.</li>
+      <li>Odznaka klastra w pasku nawigacji aktualizuje się po każdej ocenie (segmentacja K-Means).</li>
     </ul>
   </div>
 </div>
@@ -36,8 +36,8 @@
 {% if starters %}
 <div class="mb-5">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h5 mb-0">Books to rate first</h2>
-    <span class="badge text-bg-secondary">{{ starters | length }} suggestions</span>
+    <h2 class="h5 mb-0">Książki do oceny na start</h2>
+    <span class="badge text-bg-secondary">{{ starters | length }} propozycji</span>
   </div>
   <div class="row g-3">
     {% for book in starters %}
@@ -47,7 +47,7 @@
           <h3 class="h6 card-title">
             <a href="/books/{{ book.id }}" class="text-decoration-none">{{ book.title | truncate(48) }}</a>
           </h3>
-          <p class="small text-muted mb-2">{{ book.author or "Unknown author" }}</p>
+          <p class="small text-muted mb-2">{{ book.author or "Nieznany autor" }}</p>
           {% include "partials/_rating_widget.html" with context %}
         </div>
       </div>
@@ -59,12 +59,12 @@
 
 <div class="mb-5">
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="h5 mb-0">Recommended for you</h2>
+    <h2 class="h5 mb-0">Rekomendowane dla Ciebie</h2>
     <button class="btn btn-sm btn-outline-primary"
             hx-get="/me/recommendations"
             hx-target="#my-recommendations"
             hx-swap="innerHTML">
-      <i class="bi bi-arrow-clockwise"></i> Refresh
+      <i class="bi bi-arrow-clockwise"></i> Odśwież
     </button>
   </div>
   <div id="my-recommendations" class="card border-0 shadow-sm">
@@ -77,7 +77,7 @@
 </div>
 
 <div>
-  <h2 class="h5 mb-3">My statistics &amp; ratings</h2>
+  <h2 class="h5 mb-3">Moje statystyki i oceny</h2>
   {% include "account/_ratings_section.html" %}
 </div>
 {% endblock %}

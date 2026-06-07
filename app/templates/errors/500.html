@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Server error — {{ app_name or "JoyBookers" }}{% endblock %}
+{% block title %}Błąd serwera — {{ app_name or "JoyBookers" }}{% endblock %}
 {% block content %}
 <div class="text-center py-5">
   <h1 class="display-1 text-danger">500</h1>
-  <p class="lead">{{ detail or "Something went wrong." }}</p>
-  <a href="/" class="btn btn-primary">Back to home</a>
+  <p class="lead">{{ detail or "Coś poszło nie tak." }}</p>
+  <a href="/" class="btn btn-primary">Wróć na stronę główną</a>
 </div>
 {% endblock %}

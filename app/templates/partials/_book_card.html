@@ -3,7 +3,7 @@
     {% if book.image_url %}
     <img src="{{ book.image_url }}" class="card-img-top" alt="{{ book.title }}" loading="lazy">
     {% else %}
-    <div class="book-cover-placeholder m-2">No cover</div>
+    <div class="book-cover-placeholder m-2">Brak okładki</div>
     {% endif %}
     <div class="card-body d-flex flex-column">
       <h5 class="card-title fs-6">
@@ -12,23 +12,23 @@
       <p class="card-subtitle text-muted small mb-2">
         {% if book.author %}
         <a href="/authors/by/{{ book.author | urlencode }}" class="text-muted text-decoration-none z-1 position-relative">{{ book.author }}</a>
-        {% else %}Unknown author{% endif %}
+        {% else %}Nieznany autor{% endif %}
       </p>
       {% if book.genre %}
       <p class="card-text small text-truncate text-secondary mb-2" title="{{ book.genre }}">{{ book.genre }}</p>
       {% endif %}
       <div class="mt-auto d-flex flex-wrap gap-1">
         {% if book.rating_count %}
-        <span class="badge text-bg-primary" title="Ratings in database">{{ book.rating_count }} ratings</span>
+        <span class="badge text-bg-primary" title="Oceny w bazie danych">{{ book.rating_count }} ocen</span>
         {% endif %}
         {% if book.db_avg_rating %}
-        <span class="badge text-bg-success" title="Average from DB ratings">{{ "%.2f"|format(book.db_avg_rating) }}&#9733; avg</span>
+        <span class="badge text-bg-success" title="Średnia z ocen w BD">{{ "%.2f"|format(book.db_avg_rating) }}&#9733; śr.</span>
         {% endif %}
         {% if book.avg_rating %}
-        <span class="badge text-bg-warning" title="Catalog average">{{ "%.2f"|format(book.avg_rating) }}&#9733; cat.</span>
+        <span class="badge text-bg-warning" title="Średnia katalogowa">{{ "%.2f"|format(book.avg_rating) }}&#9733; kat.</span>
         {% endif %}
         {% if book.pages %}
-        <span class="badge text-bg-light text-dark">{{ book.pages }} pp.</span>
+        <span class="badge text-bg-light text-dark">{{ book.pages }} str.</span>
         {% endif %}
       </div>
     </div>
