@@ -1,0 +1,145 @@
+{
+  "ds1": {
+    "source": "ds1_goodreads_2m",
+    "load": {
+      "books": {
+        "source": "shards",
+        "n_shards": 23,
+        "shard_files": [
+          "book1-100k.csv",
+          "book100k-200k.csv",
+          "book200k-300k.csv",
+          "book300k-400k.csv",
+          "book400k-500k.csv",
+          "book500k-600k.csv",
+          "book600k-700k.csv",
+          "book700k-800k.csv",
+          "book800k-900k.csv",
+          "book900k-1000k.csv",
+          "book1000k-1100k.csv",
+          "book1100k-1200k.csv",
+          "book1200k-1300k.csv",
+          "book1300k-1400k.csv",
+          "book1400k-1500k.csv",
+          "book1500k-1600k.csv",
+          "book1600k-1700k.csv",
+          "book1700k-1800k.csv",
+          "book1800k-1900k.csv",
+          "book1900k-2000k.csv",
+          "book2000k-3000k.csv",
+          "book3000k-4000k.csv",
+          "book4000k-5000k.csv"
+        ],
+        "rows_per_shard": {
+          "book1-100k.csv": 58292,
+          "book100k-200k.csv": 57046,
+          "book200k-300k.csv": 56182,
+          "book300k-400k.csv": 56586,
+          "book400k-500k.csv": 55155,
+          "book500k-600k.csv": 54859,
+          "book600k-700k.csv": 55156,
+          "book700k-800k.csv": 54273,
+          "book800k-900k.csv": 49843,
+          "book900k-1000k.csv": 40890,
+          "book1000k-1100k.csv": 39705,
+          "book1100k-1200k.csv": 41892,
+          "book1200k-1300k.csv": 43622,
+          "book1300k-1400k.csv": 38288,
+          "book1400k-1500k.csv": 34759,
+          "book1500k-1600k.csv": 33439,
+          "book1600k-1700k.csv": 32986,
+          "book1700k-1800k.csv": 32105,
+          "book1800k-1900k.csv": 38863,
+          "book1900k-2000k.csv": 43561,
+          "book2000k-3000k.csv": 395957,
+          "book3000k-4000k.csv": 256595,
+          "book4000k-5000k.csv": 280256
+        },
+        "rows_combined": 1850310
+      },
+      "ratings": {
+        "source": "shards",
+        "n_shards": 7,
+        "shard_files": [
+          "user_rating_0_to_1000.csv",
+          "user_rating_1000_to_2000.csv",
+          "user_rating_2000_to_3000.csv",
+          "user_rating_3000_to_4000.csv",
+          "user_rating_4000_to_5000.csv",
+          "user_rating_5000_to_6000.csv",
+          "user_rating_6000_to_11000.csv"
+        ],
+        "rows_per_shard": {
+          "user_rating_0_to_1000.csv": 51945,
+          "user_rating_1000_to_2000.csv": 42986,
+          "user_rating_2000_to_3000.csv": 30633,
+          "user_rating_3000_to_4000.csv": 46970,
+          "user_rating_4000_to_5000.csv": 46903,
+          "user_rating_5000_to_6000.csv": 15481,
+          "user_rating_6000_to_11000.csv": 127678
+        },
+        "rows_combined": 362596
+      }
+    },
+    "books_cleaning": {
+      "books_rows_input": 1850310,
+      "books_rows_clean": 1548594,
+      "books_duplicate_ids_dropped": 118
+    },
+    "interactions_cleaning": {
+      "interactions_source_format": "title_labels",
+      "title_match_mode": "normalized_exact_core_fuzzy",
+      "rows_dropped_unmapped_rating": 4765,
+      "title_match_fuzzy_threshold": 88,
+      "title_match_exact_normalized": 208766,
+      "title_match_exact_core": 27389,
+      "title_match_fuzzy": 347,
+      "title_match_unmatched": 121329,
+      "title_match_fuzzy_score_avg": 95.11158553023121,
+      "title_match_fuzzy_score_min": 88.09523809523809,
+      "rows_dropped_no_title_match": 121329,
+      "interactions_duplicate_user_book_dropped": 1018,
+      "interactions_filtered_unknown_book": true,
+      "interactions_rows_raw": 362596,
+      "interactions_rows_clean": 235484,
+      "n_users": 3980,
+      "n_books_rated": 48920,
+      "density": 0.0012094610419226138,
+      "outliers": {
+        "users_with_1_rating": 454,
+        "users_with_gt_5000_ratings": 0,
+        "books_with_1_rating": 28592,
+        "books_with_gt_10000_ratings": 0,
+        "max_ratings_per_user": 2231,
+        "max_ratings_per_book": 984,
+        "rating_outliers": {
+          "below_1": 0,
+          "above_5": 0,
+          "null_after_coerce": 0
+        }
+      }
+    }
+  },
+  "ds2": {
+    "skipped": "no raw files"
+  },
+  "ds3": {
+    "source": "ds3_goodreads_best",
+    "load": {
+      "n_files": 1,
+      "files": [
+        "books_1.Best_Books_Ever.csv"
+      ],
+      "rows_per_file": {
+        "books_1.Best_Books_Ever.csv": 52478
+      },
+      "rows_total": 52478
+    },
+    "rows_clean": 52424,
+    "rows_with_tags": 0,
+    "rows_with_characters": 13758
+  },
+  "ds4": {
+    "skipped": "no raw files"
+  }
+}

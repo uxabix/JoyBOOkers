@@ -1,0 +1,14 @@
+<div class="card shadow-sm">
+  <div class="card-body">
+    <h5 class="card-title">
+      Label:
+      <span class="badge {% if prediction.label == 'positive' %}text-bg-success{% elif prediction.label == 'negative' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
+        {{ prediction.label }}
+      </span>
+    </h5>
+    <p class="mb-1">Confidence: <strong>{{ "%.2f"|format(prediction.score) }}</strong></p>
+    <p class="small text-muted mb-0">Model: {{ prediction.model }}</p>
+    <hr>
+    <p class="small fst-italic">{{ text }}</p>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+{
+  "n_reviews": 96460,
+  "n_positive": 83794,
+  "n_negative": 12666,
+  "vocab_size": 15000,
+  "word_count_median": 90.0,
+  "word_count_p99": 771.4100000000035,
+  "independent_of_goodreads": true,
+  "paths": {
+    "reviews_enriched": "data/processed/features/nlp/reviews_enriched.parquet",
+    "vocabulary": "data/processed/features/nlp/nlp_vocabulary.json"
+  }
+}

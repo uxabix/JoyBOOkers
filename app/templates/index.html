@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ app_name }} — Home{% endblock %}
+{% block content %}
+<div class="row align-items-center">
+  <div class="col-lg-7">
+    <h1 class="display-5 fw-bold">Book Recommendation System</h1>
+    <p class="lead text-muted">
+      University project combining collaborative filtering, content-based recommendations,
+      and independent sentiment analysis across four Goodreads / Amazon datasets.
+    </p>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-primary" href="/books">Browse catalog (DS2)</a>
+      <a class="btn btn-outline-primary" href="/recommendations">Get recommendations</a>
+      <a class="btn btn-outline-secondary" href="/sentiment">Analyze review sentiment (DS4)</a>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Dataset roles</h5>
+        <ul class="small mb-0">
+          <li><strong>DS1 (2M)</strong> — ratings &amp; collaborative filtering only</li>
+          <li><strong>DS2 (100k)</strong> — genres, metadata, content vectors</li>
+          <li><strong>DS3 (Best)</strong> — tags &amp; characters enrichment</li>
+          <li><strong>DS4 (Amazon)</strong> — independent sentiment NLP</li>
+        </ul>
+      </div>
+    </div>
+    <p class="text-muted small mt-2">Version {{ version }}</p>
+  </div>
+</div>
+{% endblock %}

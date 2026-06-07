@@ -1,0 +1,13 @@
+{
+  "dataset": "ds4_amazon_reviews",
+  "independent_of_goodreads": true,
+  "label_mapping": {
+    "positive": 1,
+    "negative": 0
+  },
+  "train_rows": 1509675,
+  "val_rows": 188708,
+  "test_rows": 188708,
+  "text_column": "review_text_clean",
+  "label_column": "sentiment_label"
+}

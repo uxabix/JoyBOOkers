@@ -1,0 +1,12 @@
+{
+  "dataset": "ds1_goodreads_2m",
+  "task": "collaborative_filtering",
+  "train_rows": 189404,
+  "test_rows": 46080,
+  "n_users_train": 3980,
+  "n_books_train": 42953,
+  "rating_scale": [
+    1.0,
+    5.0
+  ]
+}

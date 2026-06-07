@@ -217,6 +217,10 @@ data/processed/*
 !data/processed/.gitkeep
 data/processed_smoke/
 
+# Version-controlled pipeline / ML reports (JSON + EDA PNG only)
+!reports/
+!reports/**
+
 # =============================================================================
 # Docker (local overrides)
 # =============================================================================

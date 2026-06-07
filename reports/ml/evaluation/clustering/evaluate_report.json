@@ -1,0 +1,25 @@
+{
+  "algorithm": "KMeans",
+  "n_users": 3311,
+  "n_clusters": 3,
+  "inertia": 10552.5361328125,
+  "silhouette": 0.4702112078666687,
+  "cluster_profiles_mean": {
+    "n_ratings": {
+      "0": 148.591,
+      "1": 6.036,
+      "2": 19.783
+    },
+    "mean_rating": {
+      "0": 3.821,
+      "1": 4.142,
+      "2": 4.017
+    },
+    "std_rating": {
+      "0": 0.916,
+      "1": 0.68,
+      "2": 0.842
+    }
+  },
+  "model_path": "data/processed/models/clustering/kmeans_model.joblib"
+}

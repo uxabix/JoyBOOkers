@@ -1,0 +1,456 @@
+{
+  "project_scope": {
+    "ds1_goodreads_2m": "Collaborative filtering (SVD), rating analysis, user K-Means",
+    "ds2_goodreads_100k": "Content-based recommendation (TF-IDF / sparse BoW)",
+    "ds3_goodreads_best": "Enrichment: tags, characters (merged into DS2 where match_key aligns)",
+    "ds4_amazon_reviews": "Independent NLP / sentiment (Logistic Regression)",
+    "excluded": "No TF-IDF/BoW on full DS1 catalog (1.5M+ books)"
+  },
+  "schemas": {
+    "ds1_goodreads_2m": {
+      "display_name": "Goodreads Book Datasets With User Rating 2M",
+      "raw_file_patterns": [
+        "book*.csv",
+        "user_rating_*.csv",
+        "user-rating.csv"
+      ],
+      "usable_columns": {
+        "id": "canonical book id (catalog)",
+        "name": "book title",
+        "authors": "pipe-separated authors",
+        "publisher": "publisher name",
+        "publishyear": "publication year",
+        "publishmonth": "publication month",
+        "publishday": "publication day",
+        "language": "ISO-like language code",
+        "isbn": "ISBN-10/13 as stored",
+        "pagesnumber": "page count",
+        "catalog_rating": "catalog average rating 0-5 (column: rating)",
+        "countsofreview": "number of ratings on Goodreads",
+        "ratingdist1": "count of 1-star ratings (parsed)",
+        "ratingdist5": "count of 5-star ratings (parsed)",
+        "user_id": "rater id (interactions)",
+        "book_id": "book id (interactions)",
+        "user_rating": "user star rating 1-5 (column: rating in ratings file)",
+        "timestamp": "optional unix/ms timestamp"
+      },
+      "preprocessing_notes": [
+        "CF ONLY: user-item matrix, SVD, user K-Means — not used for content TF-IDF.",
+        "Books: drop invalid ids, dedupe on id, bound numeric fields.",
+        "Ratings: support explicit ids OR title+text-rating Kaggle export.",
+        "Title matching links text ratings to catalog ids (rapidfuzz)."
+      ],
+      "feature_outputs": [
+        "interactions_clean",
+        "user_item_matrix",
+        "user_clustering_features",
+        "svd_train_interactions"
+      ]
+    },
+    "ds2_goodreads_100k": {
+      "display_name": "Goodreads 100k Books",
+      "raw_file_patterns": [
+        "GoodReads_100k_books.csv",
+        "goodreads_100k*.csv",
+        "books*.csv",
+        "*.csv"
+      ],
+      "usable_columns": {
+        "title": "book title",
+        "author": "primary author(s)",
+        "genre": "genre list / tags",
+        "description": "book blurb",
+        "isbn": "ISBN",
+        "isbn13": "ISBN-13",
+        "pages": "page count",
+        "rating": "average rating",
+        "book_format": "hardcover/paperback/etc",
+        "link": "Goodreads URL",
+        "image": "cover image URL"
+      },
+      "preprocessing_notes": [
+        "Primary dataset for content-based recommendation (~100k books).",
+        "Sparse BoW / TF-IDF; cosine similarity for similar books.",
+        "DS3 tags/characters merged via match_key during feature stage."
+      ],
+      "feature_outputs": [
+        "content_catalog",
+        "bow_matrix.npz",
+        "genre_matrix.npz"
+      ]
+    },
+    "ds3_goodreads_best": {
+      "display_name": "Goodreads Best Books",
+      "raw_file_patterns": [
+        "*.csv",
+        "*.json",
+        "*.jsonl"
+      ],
+      "usable_columns": {
+        "title": "book title",
+        "authors": "author list",
+        "genres": "genre tags",
+        "tags": "user tags",
+        "characters": "character names",
+        "description": "summary text",
+        "avg_rating": "average rating",
+        "num_ratings": "rating count",
+        "num_reviews": "review count",
+        "isbn": "ISBN",
+        "isbn13": "ISBN-13",
+        "language": "language",
+        "series": "series name",
+        "first_publish_date": "first edition date"
+      },
+      "preprocessing_notes": [
+        "Enrichment only: tags, characters, extra genres.",
+        "Merged into DS2 catalog where match_key aligns — no DS1 linking."
+      ],
+      "feature_outputs": [
+        "ds3_enrichment_rows"
+      ]
+    },
+    "ds4_amazon_reviews": {
+      "display_name": "Amazon Books Reviews",
+      "raw_file_patterns": [
+        "*.json",
+        "*.jsonl",
+        "*.csv",
+        "*.csv.gz"
+      ],
+      "usable_columns": {
+        "reviewtext": "review body (NLP)",
+        "text": "review body alt name",
+        "review_body": "review body alt name",
+        "overall": "star rating 1–5",
+        "rating": "star rating alt name",
+        "summary": "short review headline",
+        "asin": "Amazon product id",
+        "parent_asin": "parent product id",
+        "reviewerid": "reviewer id",
+        "user_id": "reviewer id alt",
+        "unixreviewtime": "unix timestamp",
+        "timestamp": "unix timestamp alt",
+        "verified": "verified purchase flag",
+        "helpful": "helpful votes [yes, total]"
+      },
+      "preprocessing_notes": [
+        "Fully independent NLP corpus — do NOT merge with Goodreads.",
+        "Labels from star rating: >=4 positive, <=2 negative, drop neutral."
+      ],
+      "feature_outputs": [
+        "nlp_train_reviews",
+        "nlp_val_reviews",
+        "nlp_test_reviews",
+        "sentiment_labels"
+      ]
+    }
+  },
+  "datasets": {
+    "ds1": {
+      "source": "ds1_goodreads_2m",
+      "raw_dir": "data/raw",
+      "book_files": [
+        "book1-100k.csv",
+        "book100k-200k.csv",
+        "book200k-300k.csv",
+        "book300k-400k.csv",
+        "book400k-500k.csv",
+        "book500k-600k.csv",
+        "book600k-700k.csv",
+        "book700k-800k.csv",
+        "book800k-900k.csv",
+        "book900k-1000k.csv",
+        "book1000k-1100k.csv",
+        "book1100k-1200k.csv",
+        "book1200k-1300k.csv",
+        "book1300k-1400k.csv",
+        "book1400k-1500k.csv",
+        "book1500k-1600k.csv",
+        "book1600k-1700k.csv",
+        "book1700k-1800k.csv",
+        "book1800k-1900k.csv",
+        "book1900k-2000k.csv",
+        "book2000k-3000k.csv",
+        "book3000k-4000k.csv",
+        "book4000k-5000k.csv"
+      ],
+      "rating_files": [
+        "user_rating_0_to_1000.csv",
+        "user_rating_1000_to_2000.csv",
+        "user_rating_2000_to_3000.csv",
+        "user_rating_3000_to_4000.csv",
+        "user_rating_4000_to_5000.csv",
+        "user_rating_5000_to_6000.csv",
+        "user_rating_6000_to_11000.csv"
+      ],
+      "books": {
+        "profile": {
+          "name": "ds1_books_raw",
+          "n_rows": 1850310,
+          "n_columns": 20,
+          "columns": [
+            "id",
+            "name",
+            "ratingdist1",
+            "pagesnumber",
+            "ratingdist4",
+            "ratingdisttotal",
+            "publishmonth",
+            "publishday",
+            "publisher",
+            "countsofreview",
+            "publishyear",
+            "language",
+            "authors",
+            "rating",
+            "ratingdist2",
+            "ratingdist5",
+            "isbn",
+            "ratingdist3",
+            "description",
+            "count_of_text_reviews"
+          ],
+          "dtypes": {
+            "id": "int64",
+            "name": "str",
+            "ratingdist1": "str",
+            "pagesnumber": "float64",
+            "ratingdist4": "str",
+            "ratingdisttotal": "str",
+            "publishmonth": "int64",
+            "publishday": "int64",
+            "publisher": "str",
+            "countsofreview": "int64",
+            "publishyear": "int64",
+            "language": "str",
+            "authors": "str",
+            "rating": "float64",
+            "ratingdist2": "str",
+            "ratingdist5": "str",
+            "isbn": "str",
+            "ratingdist3": "str",
+            "description": "str",
+            "count_of_text_reviews": "float64"
+          },
+          "missing_per_column": {
+            "id": 0,
+            "name": 0,
+            "ratingdist1": 0,
+            "pagesnumber": 1015232,
+            "ratingdist4": 0,
+            "ratingdisttotal": 0,
+            "publishmonth": 0,
+            "publishday": 0,
+            "publisher": 17826,
+            "countsofreview": 0,
+            "publishyear": 0,
+            "language": 1598488,
+            "authors": 0,
+            "rating": 0,
+            "ratingdist2": 0,
+            "ratingdist5": 0,
+            "isbn": 5923,
+            "ratingdist3": 0,
+            "description": 679122,
+            "count_of_text_reviews": 1440613
+          },
+          "memory_mb": 1318.9016304016113
+        },
+        "missing": {
+          "n_rows": 1850310,
+          "missing_count": {
+            "id": 0,
+            "name": 0,
+            "ratingdist1": 0,
+            "pagesnumber": 1015232,
+            "ratingdist4": 0,
+            "ratingdisttotal": 0,
+            "publishmonth": 0,
+            "publishday": 0,
+            "publisher": 17826,
+            "countsofreview": 0,
+            "publishyear": 0,
+            "language": 1598488,
+            "authors": 0,
+            "rating": 0,
+            "ratingdist2": 0,
+            "ratingdist5": 0,
+            "isbn": 5923,
+            "ratingdist3": 0,
+            "description": 679122,
+            "count_of_text_reviews": 1440613
+          },
+          "missing_rate": {
+            "id": 0.0,
+            "name": 0.0,
+            "ratingdist1": 0.0,
+            "pagesnumber": 0.5486821127270566,
+            "ratingdist4": 0.0,
+            "ratingdisttotal": 0.0,
+            "publishmonth": 0.0,
+            "publishday": 0.0,
+            "publisher": 0.009634061319454578,
+            "countsofreview": 0.0,
+            "publishyear": 0.0,
+            "language": 0.8639028054758392,
+            "authors": 0.0,
+            "rating": 0.0,
+            "ratingdist2": 0.0,
+            "ratingdist5": 0.0,
+            "isbn": 0.0032010852235571335,
+            "ratingdist3": 0.0,
+            "description": 0.3670314704022569,
+            "count_of_text_reviews": 0.7785792650961191
+          },
+          "rows_all_missing": 0
+        },
+        "columns": {
+          "matched_columns": {
+            "id": "id",
+            "name": "name",
+            "authors": "authors",
+            "publisher": "publisher",
+            "publishyear": "publishyear",
+            "publishmonth": "publishmonth",
+            "publishday": "publishday",
+            "language": "language",
+            "isbn": "isbn",
+            "pagesnumber": "pagesnumber",
+            "countsofreview": "countsofreview",
+            "ratingdist1": "ratingdist1",
+            "ratingdist5": "ratingdist5"
+          },
+          "unmatched_schema_roles": [
+            "catalog_rating",
+            "user_id",
+            "book_id",
+            "user_rating",
+            "timestamp"
+          ],
+          "extra_columns": [
+            "count_of_text_reviews",
+            "description",
+            "rating",
+            "ratingdist2",
+            "ratingdist3",
+            "ratingdist4",
+            "ratingdisttotal"
+          ]
+        },
+        "numeric_outliers": {
+          "publishyear": {
+            "outlier_count": 36,
+            "lo": 1000,
+            "hi": 2030,
+            "p01": 1970.0,
+            "p99": 2010.0
+          },
+          "pagesnumber": {
+            "outlier_count": 5909,
+            "lo": 1,
+            "hi": 10000,
+            "p01": 3.0,
+            "p99": 992.0
+          },
+          "rating": {
+            "outlier_count": 0,
+            "lo": 0.0,
+            "hi": 5.0,
+            "p01": 0.0,
+            "p99": 5.0
+          },
+          "countsofreview": {
+            "outlier_count": 0,
+            "lo": 0,
+            "hi": null,
+            "p01": 0.0,
+            "p99": 146.0
+          }
+        }
+      },
+      "ratings": {
+        "profile": {
+          "name": "ds1_ratings_raw",
+          "n_rows": 362596,
+          "n_columns": 3,
+          "columns": [
+            "id",
+            "name",
+            "rating"
+          ],
+          "dtypes": {
+            "id": "int64",
+            "name": "str",
+            "rating": "str"
+          },
+          "missing_per_column": {
+            "id": 0,
+            "name": 0,
+            "rating": 0
+          },
+          "memory_mb": 23.40427589416504
+        },
+        "missing": {
+          "n_rows": 362596,
+          "missing_count": {
+            "id": 0,
+            "name": 0,
+            "rating": 0
+          },
+          "missing_rate": {
+            "id": 0.0,
+            "name": 0.0,
+            "rating": 0.0
+          },
+          "rows_all_missing": 0
+        },
+        "columns": {
+          "matched_columns": {
+            "id": "id",
+            "name": "name"
+          },
+          "unmatched_schema_roles": [
+            "authors",
+            "publisher",
+            "publishyear",
+            "publishmonth",
+            "publishday",
+            "language",
+            "isbn",
+            "pagesnumber",
+            "catalog_rating",
+            "countsofreview",
+            "ratingdist1",
+            "ratingdist5",
+            "user_id",
+            "book_id",
+            "user_rating",
+            "timestamp"
+          ],
+          "extra_columns": [
+            "rating"
+          ]
+        }
+      }
+    },
+    "ds2": {
+      "source": "ds2_goodreads_100k",
+      "raw_dir": "data/raw/ds2_goodreads_100k",
+      "files": [],
+      "error": "No CSV files found"
+    },
+    "ds3": {
+      "source": "ds3_goodreads_best",
+      "raw_dir": "data/raw/ds3_goodreads_best",
+      "format": "none",
+      "error": "No files found"
+    },
+    "ds4": {
+      "source": "ds4_amazon_reviews",
+      "raw_dir": "data/raw/ds4_amazon_reviews",
+      "format": "none",
+      "error": "No review files found"
+    }
+  }
+}

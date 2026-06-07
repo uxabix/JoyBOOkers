@@ -1,0 +1,30 @@
+"""User service."""
+
+from __future__ import annotations
+
+from sqlalchemy.orm import Session
+
+from app.db.models.user import User
+from app.repositories.user_repository import UserRepository
+from app.schemas.user import UserCreate, UserRead
+
+
+class UserService:
+    def __init__(self, session: Session) -> None:
+        self.repo = UserRepository(session)
+        self.session = session
+
+    def get(self, user_id: int) -> UserRead | None:
+        user = self.repo.get(user_id)
+        return UserRead.model_validate(user) if user else None
+
+    def get_or_create(self, payload: UserCreate) -> UserRead:
+        existing = self.repo.get_by_external_id(payload.external_id)
+        if existing:
+            return UserRead.model_validate(existing)
+
+        user = User(external_id=payload.external_id, display_name=payload.display_name)
+        self.repo.add(user)
+        self.session.commit()
+        self.session.refresh(user)
+        return UserRead.model_validate(user)

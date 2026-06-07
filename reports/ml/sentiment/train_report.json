@@ -1,0 +1,25 @@
+{
+  "algorithm": "TfidfVectorizer + LogisticRegression",
+  "dataset": "ds4_amazon_reviews",
+  "hyperparameters": {
+    "max_features": 20000,
+    "min_df": 2,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "C": 1.0,
+    "max_iter": 1000
+  },
+  "train_rows": 1509675,
+  "validation_metrics": {
+    "accuracy": 0.9179790999851623,
+    "precision_macro": 0.8116121796845783,
+    "recall_macro": 0.9135167205769279,
+    "f1_macro": 0.8503427267176356,
+    "classification_report": "              precision    recall  f1-score   support\n\n           0       0.64      0.91      0.75     25550\n           1       0.98      0.92      0.95    163158\n\n    accuracy                           0.92    188708\n   macro avg       0.81      0.91      0.85    188708\nweighted avg       0.94      0.92      0.92    188708\n"
+  },
+  "paths": {
+    "model": "data/processed/models/sentiment/sentiment_pipeline.joblib"
+  }
+}

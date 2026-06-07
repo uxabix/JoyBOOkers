@@ -1,0 +1,14 @@
+{
+  "n_interactions": 235484,
+  "n_users": 3980,
+  "n_books": 48920,
+  "density": 0.0012094610419226138,
+  "rating_mean": 3.7978461381665,
+  "paths": {
+    "interactions_indexed": "data/processed/features/interactions/interactions_indexed.parquet",
+    "user_index": "data/processed/features/interactions/user_index.parquet",
+    "book_index": "data/processed/features/interactions/book_index.parquet",
+    "user_stats": "data/processed/features/interactions/user_stats.parquet",
+    "book_stats": "data/processed/features/interactions/book_stats.parquet"
+  }
+}

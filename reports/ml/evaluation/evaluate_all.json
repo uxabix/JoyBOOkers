@@ -1,0 +1,64 @@
+{
+  "collaborative": {
+    "algorithm": "Surprise.SVD",
+    "test_rows": 46080,
+    "rmse": 0.8899871831413055,
+    "mae": 0.706455408963776,
+    "regression": {
+      "rmse": 0.8899871831413055,
+      "mae": 0.706455408963776
+    },
+    "ranking": {
+      "precision_at_k": 0.005600000000000001,
+      "recall_at_k": 0.00664031364537202,
+      "k": 10.0
+    },
+    "model_path": "data/processed/models/collaborative/svd_model.pkl"
+  },
+  "content": {
+    "algorithm": "TF-IDF cosine similarity",
+    "sample_size": 500,
+    "top_k": 10,
+    "mean_genre_overlap_at_k": 0.714415774284499,
+    "mean_neighbor_cosine": 0.6331032977868826,
+    "matrix_path": "data/processed/models/content/tfidf_combined.npz",
+    "n_books": 149342
+  },
+  "sentiment": {
+    "algorithm": "TfidfVectorizer + LogisticRegression",
+    "test_rows": 188708,
+    "metrics": {
+      "accuracy": 0.9177936282510546,
+      "precision_macro": 0.8112429598487687,
+      "recall_macro": 0.9150599583288446,
+      "f1_macro": 0.8504607413381948,
+      "classification_report": "              precision    recall  f1-score   support\n\n           0       0.64      0.91      0.75     25550\n           1       0.99      0.92      0.95    163158\n\n    accuracy                           0.92    188708\n   macro avg       0.81      0.92      0.85    188708\nweighted avg       0.94      0.92      0.92    188708\n"
+    },
+    "model_path": "data/processed/models/sentiment/sentiment_pipeline.joblib"
+  },
+  "clustering": {
+    "algorithm": "KMeans",
+    "n_users": 3311,
+    "n_clusters": 3,
+    "inertia": 10552.5361328125,
+    "silhouette": 0.4702112078666687,
+    "cluster_profiles_mean": {
+      "n_ratings": {
+        "0": 148.591,
+        "1": 6.036,
+        "2": 19.783
+      },
+      "mean_rating": {
+        "0": 3.821,
+        "1": 4.142,
+        "2": 4.017
+      },
+      "std_rating": {
+        "0": 0.916,
+        "1": 0.68,
+        "2": 0.842
+      }
+    },
+    "model_path": "data/processed/models/clustering/kmeans_model.joblib"
+  }
+}

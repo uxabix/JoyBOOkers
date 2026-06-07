@@ -1,0 +1,9 @@
+{
+  "algorithm": "TF-IDF cosine similarity",
+  "sample_size": 500,
+  "top_k": 10,
+  "mean_genre_overlap_at_k": 0.714415774284499,
+  "mean_neighbor_cosine": 0.6331032977868826,
+  "matrix_path": "data/processed/models/content/tfidf_combined.npz",
+  "n_books": 149342
+}

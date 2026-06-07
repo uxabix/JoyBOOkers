@@ -1,0 +1,14 @@
+{
+  "dataset": "ds1_goodreads_2m",
+  "entity": "users",
+  "n_users": 3311,
+  "feature_columns": [
+    "n_ratings",
+    "mean_rating",
+    "std_rating",
+    "rating_range",
+    "activity_low",
+    "activity_medium",
+    "activity_high"
+  ]
+}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Recommendations — {{ app_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-3">Personalized recommendations</h2>
+<p class="text-muted">Collaborative filtering uses DS1 ratings; content fallback uses DS2 sparse vectors.</p>
+<form hx-post="/recommendations"
+      hx-target="#rec-results"
+      hx-indicator="#rec-spinner"
+      class="row g-3 mb-4">
+  <div class="col-md-4">
+    <label class="form-label">User ID</label>
+    <input type="number" name="user_id" class="form-control" required min="1">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Limit</label>
+    <input type="number" name="limit" class="form-control" value="10" min="1" max="50">
+  </div>
+  <div class="col-md-3">
+    <label class="form-label">Algorithm</label>
+    <select name="algorithm" class="form-select">
+      <option value="auto">Auto</option>
+      <option value="collaborative">Collaborative (DS1)</option>
+      <option value="hybrid">Hybrid / content fallback</option>
+    </select>
+  </div>
+  <div class="col-md-2 d-flex align-items-end">
+    <button class="btn btn-primary w-100" type="submit">Recommend</button>
+  </div>
+</form>
+<div id="rec-spinner" class="htmx-indicator text-muted">Loading…</div>
+<div id="rec-results"></div>
+{% endblock %}

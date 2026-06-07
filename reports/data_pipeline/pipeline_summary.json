@@ -1,0 +1,96 @@
+{
+  "stages_run": [
+    "features"
+  ],
+  "project_scope": {
+    "ds1_goodreads_2m": "Collaborative filtering (SVD), rating analysis, user K-Means",
+    "ds2_goodreads_100k": "Content-based recommendation (TF-IDF / sparse BoW)",
+    "ds3_goodreads_best": "Enrichment: tags, characters (merged into DS2 where match_key aligns)",
+    "ds4_amazon_reviews": "Independent NLP / sentiment (Logistic Regression)",
+    "excluded": "No TF-IDF/BoW on full DS1 catalog (1.5M+ books)"
+  },
+  "features": {
+    "project_scope": {
+      "ds1_goodreads_2m": "Collaborative filtering (SVD), rating analysis, user K-Means",
+      "ds2_goodreads_100k": "Content-based recommendation (TF-IDF / sparse BoW)",
+      "ds3_goodreads_best": "Enrichment: tags, characters (merged into DS2 where match_key aligns)",
+      "ds4_amazon_reviews": "Independent NLP / sentiment (Logistic Regression)",
+      "excluded": "No TF-IDF/BoW on full DS1 catalog (1.5M+ books)"
+    },
+    "interactions": {
+      "n_interactions": 235484,
+      "n_users": 3980,
+      "n_books": 48920,
+      "density": 0.0012094610419226138,
+      "rating_mean": 3.7978461381665,
+      "paths": {
+        "interactions_indexed": "data/processed/features/interactions/interactions_indexed.parquet",
+        "user_index": "data/processed/features/interactions/user_index.parquet",
+        "book_index": "data/processed/features/interactions/book_index.parquet",
+        "user_stats": "data/processed/features/interactions/user_stats.parquet",
+        "book_stats": "data/processed/features/interactions/book_stats.parquet"
+      }
+    },
+    "clustering": {
+      "entity": "users",
+      "source_dataset": "ds1_goodreads_2m",
+      "n_users": 3311,
+      "users_dropped_below_min_ratings": 669,
+      "min_ratings": 3,
+      "feature_columns": [
+        "n_ratings",
+        "mean_rating",
+        "std_rating",
+        "rating_range",
+        "activity_low",
+        "activity_medium",
+        "activity_high"
+      ],
+      "activity_quantiles": {
+        "q33": 8.0,
+        "q66": 39.0
+      },
+      "paths": {
+        "user_features": "data/processed/features/clustering/user_features.parquet",
+        "user_features_scaled": "data/processed/features/clustering/user_features_scaled.parquet"
+      }
+    },
+    "content": {
+      "dataset_scope": "ds2_primary_ds3_enrichment",
+      "ds1_excluded": true,
+      "matrix_format": "scipy.sparse.csr",
+      "n_books": 149342,
+      "n_vocab": 5000,
+      "n_genres": 200,
+      "bow_nnz": 5546523,
+      "merge": {
+        "ds2_rows": 99999,
+        "ds3_enriched": 3095,
+        "ds3_only_rows": 49343,
+        "catalog_rows": 149342
+      },
+      "sources": {
+        "ds2_goodreads_100k": 99999,
+        "ds3_goodreads_best": 49343
+      },
+      "paths": {
+        "content_catalog": "data/processed/features/content/content_catalog.parquet",
+        "bow_matrix": "data/processed/features/content/bow_matrix.npz",
+        "genre_matrix": "data/processed/features/content/genre_matrix.npz"
+      }
+    },
+    "nlp": {
+      "n_reviews": 96460,
+      "n_positive": 83794,
+      "n_negative": 12666,
+      "vocab_size": 15000,
+      "word_count_median": 90.0,
+      "word_count_p99": 771.4100000000035,
+      "independent_of_goodreads": true,
+      "paths": {
+        "reviews_enriched": "data/processed/features/nlp/reviews_enriched.parquet",
+        "vocabulary": "data/processed/features/nlp/nlp_vocabulary.json"
+      }
+    }
+  }
+}

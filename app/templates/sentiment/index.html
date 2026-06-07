@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Sentiment — {{ app_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-3">Review sentiment <span class="badge text-bg-secondary">DS4 independent</span></h2>
+<form hx-post="/sentiment" hx-target="#sentiment-result" class="mb-3">
+  <label class="form-label">Amazon review text</label>
+  <textarea name="text" class="form-control mb-2" rows="5" required placeholder="Paste review text…"></textarea>
+  <button class="btn btn-primary" type="submit">Analyze</button>
+</form>
+<div id="sentiment-result"></div>
+{% endblock %}

@@ -1,0 +1,24 @@
+{
+  "dataset_scope": "ds2_primary_ds3_enrichment",
+  "ds1_excluded": true,
+  "matrix_format": "scipy.sparse.csr",
+  "n_books": 149342,
+  "n_vocab": 5000,
+  "n_genres": 200,
+  "bow_nnz": 5546523,
+  "merge": {
+    "ds2_rows": 99999,
+    "ds3_enriched": 3095,
+    "ds3_only_rows": 49343,
+    "catalog_rows": 149342
+  },
+  "sources": {
+    "ds2_goodreads_100k": 99999,
+    "ds3_goodreads_best": 49343
+  },
+  "paths": {
+    "content_catalog": "data/processed/features/content/content_catalog.parquet",
+    "bow_matrix": "data/processed/features/content/bow_matrix.npz",
+    "genre_matrix": "data/processed/features/content/genre_matrix.npz"
+  }
+}

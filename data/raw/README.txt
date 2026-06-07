@@ -1,31 +1,43 @@
-Source: Kaggle — goodreads-book-datasets-10m
-https://www.kaggle.com/datasets/bahramjannesarr/goodreads-book-datasets-10m
+JoyBookers — dataset layout (university project scope)
+======================================================
 
-Expected layout (full dataset, split into shards):
-  - book1-100k.csv, book100k-200k.csv, … book4000k-5000k.csv
-  - user_rating_0_to_1000.csv, user_rating_1000_to_2000.csv, …
+Each dataset has ONE job. Do not merge millions of Goodreads rows.
 
-Legacy single files are also supported when present:
-  - book.csv
-  - user-rating.csv
+  DS1  data/raw/ds1_goodreads_2m/   → Collaborative Filtering (SVD) + user K-Means
+  DS2  data/raw/ds2_goodreads_100k/   → Content-based recommendation (primary)
+  DS3  data/raw/ds3_goodreads_best/   → Enrichment (tags, characters → merged into DS2)
+  DS4  data/raw/ds4_amazon_reviews/   → NLP / sentiment (independent, no Goodreads link)
 
-Ratings CSV layout (either):
-  1) Matrix: user_id, book_id, rating [, timestamp]
-  2) Kaggle text export: ID (user), Name (book title), Rating ("it was amazing", …)
-     — titles are matched to the catalog via normalization, core-title keys, and
-       fuzzy matching (rapidfuzz, default threshold 88). Disable with
-       --no-fuzzy-title-match on stage1_prepare.py.
+Legacy DS1 flat layout still works: data/raw/book*.csv + user_rating_*.csv
 
-Stage 1 loads every matching shard, concatenates in memory (no merged copy on disk),
-then cleans and writes outputs under data/processed/.
+Performance constraints (8–16 GB RAM)
+-------------------------------------
+  - Do NOT build TF-IDF/BoW for the full DS1 catalog (1.5M+ books)
+  - Content vectors: DS2 + DS3 only (~100k–150k rows, scipy.sparse)
+  - Amazon reviews: use --ds4-sample for large corpora
 
-From the repository root:
+Run pipeline
+------------
   pip install -r requirements.txt
-  python scripts/stage1_prepare.py
+  python scripts/run_data_pipeline.py --stages all
 
-Optional flags:
-  --no-plots          skip EDA PNG export
-  --books PATH        single book CSV instead of all shards
-  --ratings PATH      single ratings CSV instead of all shards
+  python scripts/run_data_pipeline.py --stages preprocess features splits
+  python scripts/run_data_pipeline.py --ds4-sample 100000
 
-Outputs: data/processed/ (tables, stage1_summary.json, eda/*.png)
+Stages
+------
+  analyze     → data/processed/analysis/analyze_all.json
+  preprocess  → data/processed/ds1..ds4/
+  features    → interactions (DS1), clustering/users (DS1), content (DS2+DS3), nlp (DS4)
+  splits      → cf_train/test (DS1), nlp_train/val/test (DS4)
+
+  "resolve" is deprecated (no-op). DS3→DS2 merge happens inside content features.
+
+ML modules (target architecture)
+--------------------------------
+  Dataset A (DS1)  → user-item matrix → SVD → CF recommendations
+                   → user features → K-Means → user segments
+
+  Dataset B+C      → genres/tags/authors → sparse BoW → cosine → similar books
+
+  Dataset D (DS4)  → review text → TF-IDF → Logistic Regression → sentiment

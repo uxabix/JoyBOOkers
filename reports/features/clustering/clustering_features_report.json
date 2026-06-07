@@ -1,0 +1,24 @@
+{
+  "entity": "users",
+  "source_dataset": "ds1_goodreads_2m",
+  "n_users": 3311,
+  "users_dropped_below_min_ratings": 669,
+  "min_ratings": 3,
+  "feature_columns": [
+    "n_ratings",
+    "mean_rating",
+    "std_rating",
+    "rating_range",
+    "activity_low",
+    "activity_medium",
+    "activity_high"
+  ],
+  "activity_quantiles": {
+    "q33": 8.0,
+    "q66": 39.0
+  },
+  "paths": {
+    "user_features": "data/processed/features/clustering/user_features.parquet",
+    "user_features_scaled": "data/processed/features/clustering/user_features_scaled.parquet"
+  }
+}

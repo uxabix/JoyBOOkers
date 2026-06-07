@@ -1,0 +1,12 @@
+{
+  "algorithm": "TfidfVectorizer + LogisticRegression",
+  "test_rows": 188708,
+  "metrics": {
+    "accuracy": 0.9177936282510546,
+    "precision_macro": 0.8112429598487687,
+    "recall_macro": 0.9150599583288446,
+    "f1_macro": 0.8504607413381948,
+    "classification_report": "              precision    recall  f1-score   support\n\n           0       0.64      0.91      0.75     25550\n           1       0.99      0.92      0.95    163158\n\n    accuracy                           0.92    188708\n   macro avg       0.81      0.92      0.85    188708\nweighted avg       0.94      0.92      0.92    188708\n"
+  },
+  "model_path": "data/processed/models/sentiment/sentiment_pipeline.joblib"
+}

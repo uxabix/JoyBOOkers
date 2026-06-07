@@ -1,0 +1,16 @@
+{
+  "algorithm": "Surprise.SVD",
+  "test_rows": 46080,
+  "rmse": 0.8899871831413055,
+  "mae": 0.706455408963776,
+  "regression": {
+    "rmse": 0.8899871831413055,
+    "mae": 0.706455408963776
+  },
+  "ranking": {
+    "precision_at_k": 0.005600000000000001,
+    "recall_at_k": 0.00664031364537202,
+    "k": 10.0
+  },
+  "model_path": "data/processed/models/collaborative/svd_model.pkl"
+}

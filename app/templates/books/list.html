@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Books — {{ app_name }}{% endblock %}
+{% block content %}
+<h2 class="mb-3">Book catalog <span class="badge text-bg-secondary">DS2 + DS3</span></h2>
+<form class="row g-2 mb-4"
+      hx-get="/books"
+      hx-target="#book-results"
+      hx-trigger="keyup changed delay:300ms, submit"
+      hx-push-url="true">
+  <div class="col-md-5">
+    <input type="search" name="q" class="form-control" placeholder="Search title or author" value="{{ q }}">
+  </div>
+  <div class="col-md-4">
+    <input type="text" name="genre" class="form-control" placeholder="Genre filter" value="{{ genre }}">
+  </div>
+  <div class="col-md-3">
+    <button class="btn btn-primary w-100" type="submit">Search</button>
+  </div>
+</form>
+<div id="book-results">
+  {% include "books/_search_results.html" %}
+</div>
+{% endblock %}

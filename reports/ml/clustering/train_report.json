@@ -1,0 +1,30 @@
+{
+  "algorithm": "KMeans",
+  "dataset": "ds1_goodreads_2m",
+  "entity": "users",
+  "n_clusters": 3,
+  "n_users": 3311,
+  "inertia": 10552.5361328125,
+  "silhouette": 0.4702112078666687,
+  "silhouette_by_k": {
+    "3": 0.4702112078666687,
+    "4": 0.4222961664199829,
+    "5": 0.4355664849281311,
+    "6": 0.44610559940338135,
+    "7": 0.36930981278419495,
+    "8": 0.3730717897415161,
+    "9": 0.3734617233276367,
+    "10": 0.35981035232543945,
+    "11": 0.34796756505966187,
+    "12": 0.35427647829055786
+  },
+  "cluster_sizes": {
+    "0": 1378,
+    "1": 611,
+    "2": 1322
+  },
+  "paths": {
+    "model": "data/processed/models/clustering/kmeans_model.joblib",
+    "assignments": "data/processed/models/clustering/user_cluster_assignments.parquet"
+  }
+}
