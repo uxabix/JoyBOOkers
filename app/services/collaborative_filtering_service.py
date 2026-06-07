@@ -42,13 +42,26 @@ class CollaborativeFilteringService:
         if not self.engine.is_loaded and not self.engine.load():
             return []
 
-        catalog, _ = self.books.search(limit=5000)
-        candidate_ids = [b.source_book_id for b in catalog]
-        raw = self.engine.recommend(user.external_id, candidate_ids, limit=limit)
+        rated_source_ids = set(self.ratings.rated_source_book_ids(user_id))
+        train_items = self.engine.train_item_ids()
+        if not train_items:
+            return []
+
+        candidate_source_ids = sorted(bid for bid in train_items if bid not in rated_source_ids)
+        if not candidate_source_ids:
+            return []
+
+        cap = self.settings.cf_candidate_limit
+        if len(candidate_source_ids) > cap:
+            candidate_source_ids = candidate_source_ids[:cap]
+
+        raw = self.engine.recommend(user.external_id, candidate_source_ids, limit=limit * 3)
 
         results: list[tuple[int, float]] = []
         for source_id, score in raw:
             book = self.books.get_by_source_id(source_id)
             if book:
                 results.append((book.id, score))
+            if len(results) >= limit:
+                break
         return results

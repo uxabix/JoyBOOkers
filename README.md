@@ -17,5 +17,6 @@ pip install -r requirements.txt
 python scripts/run_data_pipeline.py --stages all
 python scripts/ml/run_ml_pipeline.py --stages all
 python scripts/export_reports.py
+python scripts/load_db.py --books-limit 20000 --ratings-limit 50000
 uvicorn app.main:app --reload
 ```

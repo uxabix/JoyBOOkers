@@ -34,8 +34,11 @@ def _ctx(request: Request, settings: Settings, **extra):
 
 
 @router.get("/", response_class=HTMLResponse)
-def home(request: Request, settings: Settings = Depends(get_settings_dep)):
-    reports = get_reports_service()
+def home(
+    request: Request,
+    settings: Settings = Depends(get_settings_dep),
+    reports: ReportsService = Depends(get_reports_service),
+):
     analytics = reports.get_analytics_context()
     return get_templates(request).TemplateResponse(
         request,
@@ -128,11 +131,11 @@ def recommendations_page(
     user_service: UserService = Depends(get_user_service),
     settings: Settings = Depends(get_settings_dep),
 ):
-    users = user_service.list_recent(limit=15)
+    users = user_service.list_recommendation_candidates(limit=15, min_ratings=settings.min_cf_ratings_per_user)
     return get_templates(request).TemplateResponse(
         request,
         "recommendations/user.html",
-        _ctx(request, settings, users=users),
+        _ctx(request, settings, users=users, min_cf_ratings=settings.min_cf_ratings_per_user),
     )
 
 
@@ -146,10 +149,11 @@ def recommendations_submit(
     settings: Settings = Depends(get_settings_dep),
 ):
     result = service.recommend_for_user(user_id, limit=limit, algorithm=algorithm)
+    empty_reason = service.explain_empty(user_id) if not result.items else None
     return get_templates(request).TemplateResponse(
         request,
         "recommendations/_results.html",
-        _ctx(request, settings, result=result),
+        _ctx(request, settings, result=result, empty_reason=empty_reason),
     )
 
 

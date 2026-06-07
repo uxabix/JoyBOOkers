@@ -8,3 +8,8 @@
 {% with items=result.items %}
 {% include "partials/_recommendation_table.html" %}
 {% endwith %}
+{% if empty_reason %}
+<div class="alert alert-warning mt-3 mb-0">
+  <i class="bi bi-exclamation-triangle me-1"></i>{{ empty_reason }}
+</div>
+{% endif %}

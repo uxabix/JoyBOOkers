@@ -25,42 +25,49 @@ class ModelStatus:
 
 @dataclass
 class MLModelRegistry:
-    """Loads and tracks Surprise SVD, TF-IDF content, and sentiment pipelines."""
-
     settings: Settings
     cf_engine: CollaborativeFilteringEngine = field(init=False)
     content_engine: ContentRecommendationEngine = field(init=False)
     sentiment_engine: SentimentEngine = field(init=False)
     statuses: list[ModelStatus] = field(default_factory=list)
+    _loaded: bool = False
 
     def __post_init__(self) -> None:
-        content_path = (
-            self.settings.content_tfidf_path
-            if self.settings.content_tfidf_path.is_file()
-            else self.settings.content_bow_path
+        content_path = self._content_matrix_path()
+        self.cf_engine = CollaborativeFilteringEngine(
+            self.settings.cf_model_path,
+            train_items_path=self.settings.cf_train_path,
         )
-        self.cf_engine = CollaborativeFilteringEngine(self.settings.cf_model_path)
         self.content_engine = ContentRecommendationEngine(content_path)
         self.sentiment_engine = SentimentEngine(self.settings.sentiment_model_path)
-
-    def load_all(self) -> None:
-        self.statuses = [
-            self._load_one("collaborative_filtering", self.settings.cf_model_path, self.cf_engine.load),
-            self._load_one(
-                "content_tfidf",
-                self._content_matrix_path(),
-                self.content_engine.load,
-            ),
-            self._load_one("sentiment", self.settings.sentiment_model_path, self.sentiment_engine.load),
-            self._artifact_status("clustering", self.settings.clustering_model_path),
-        ]
-        loaded = sum(1 for s in self.statuses if s.loaded)
-        logger.info("ML registry: %s/%s models loaded", loaded, len(self.statuses))
 
     def _content_matrix_path(self) -> Path:
         if self.settings.content_tfidf_path.is_file():
             return self.settings.content_tfidf_path
         return self.settings.content_bow_path
+
+    def register_status_only(self) -> None:
+        self.statuses = [
+            ModelStatus("collaborative_filtering", str(self.settings.cf_model_path), False, "lazy load"),
+            ModelStatus("content_tfidf", str(self._content_matrix_path()), False, "lazy load"),
+            ModelStatus("sentiment", str(self.settings.sentiment_model_path), False, "lazy load"),
+            self._artifact_status("clustering", self.settings.clustering_model_path),
+        ]
+
+    def ensure_loaded(self) -> None:
+        if not self._loaded:
+            self.load_all()
+
+    def load_all(self) -> None:
+        self.statuses = [
+            self._load_one("collaborative_filtering", self.settings.cf_model_path, self.cf_engine.load),
+            self._load_one("content_tfidf", self._content_matrix_path(), self.content_engine.load),
+            self._load_one("sentiment", self.settings.sentiment_model_path, self.sentiment_engine.load),
+            self._artifact_status("clustering", self.settings.clustering_model_path),
+        ]
+        self._loaded = True
+        loaded = sum(1 for s in self.statuses if s.loaded)
+        logger.info("ML registry: %s/%s models loaded", loaded, len(self.statuses))
 
     def _load_one(self, name: str, path: Path, loader) -> ModelStatus:
         if not path.is_file():
@@ -69,33 +76,22 @@ class MLModelRegistry:
             return ModelStatus(name=name, path=str(path), loaded=False, detail=msg)
         ok = bool(loader())
         detail = "loaded" if ok else "load() returned false"
-        if ok:
-            logger.info("%s loaded from %s", name, path)
-        else:
-            logger.warning("%s failed to load from %s", name, path)
         return ModelStatus(name=name, path=str(path), loaded=ok, detail=detail)
 
     def _artifact_status(self, name: str, path: Path) -> ModelStatus:
         exists = path.is_file()
-        detail = "artifact present (not wired to API yet)" if exists else f"artifact missing: {path}"
-        if exists:
-            logger.info("%s artifact found at %s", name, path)
-        else:
-            logger.warning("%s — %s", name, detail)
+        detail = "reports dashboard only" if exists else f"artifact missing: {path}"
         return ModelStatus(name=name, path=str(path), loaded=exists, detail=detail)
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "models": [
-                {
-                    "name": s.name,
-                    "path": s.path,
-                    "loaded": s.loaded,
-                    "detail": s.detail,
-                }
+                {"name": s.name, "path": s.path, "loaded": s.loaded, "detail": s.detail}
                 for s in self.statuses
             ],
             "all_required_loaded": all(
-                s.loaded for s in self.statuses if s.name in {"collaborative_filtering", "content_tfidf", "sentiment"}
+                s.loaded
+                for s in self.statuses
+                if s.name in {"collaborative_filtering", "content_tfidf", "sentiment"}
             ),
         }

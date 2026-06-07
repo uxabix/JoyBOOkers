@@ -10,16 +10,22 @@ from surprise import Dataset, Reader, SVD, accuracy
 from surprise.model_selection import train_test_split
 
 from app.logging_config import get_logger
+from bookrec.io_utils import read_table
 
 logger = get_logger(__name__)
 
 
 class CollaborativeFilteringEngine:
-    """Wraps Surprise SVD trained on DS1 user-item ratings."""
-
-    def __init__(self, model_path: Path | None = None) -> None:
+    def __init__(
+        self,
+        model_path: Path | None = None,
+        *,
+        train_items_path: Path | None = None,
+    ) -> None:
         self.model_path = model_path
+        self.train_items_path = train_items_path
         self._model: SVD | None = None
+        self._train_item_ids: set[str] | None = None
 
     @property
     def is_loaded(self) -> bool:
@@ -31,11 +37,26 @@ class CollaborativeFilteringEngine:
             return False
         with self.model_path.open("rb") as fh:
             self._model = pickle.load(fh)
+        self._load_train_item_ids()
         logger.info("Loaded Surprise model from %s", self.model_path)
         return True
 
+    def _load_train_item_ids(self) -> None:
+        if self._train_item_ids is not None:
+            return
+        if self.train_items_path is None or not self.train_items_path.exists():
+            self._train_item_ids = set()
+            return
+        df = read_table(self.train_items_path)
+        self._train_item_ids = set(df["book_id"].astype(str).unique())
+        logger.info("CF train item catalog: %s unique books", len(self._train_item_ids))
+
+    def train_item_ids(self) -> set[str]:
+        if self._train_item_ids is None:
+            self._load_train_item_ids()
+        return self._train_item_ids or set()
+
     def train_from_ratings_df(self, ratings: pd.DataFrame, *, save: bool = True) -> dict[str, float]:
-        """Train SVD on columns: user_id, book_id, rating (1-5)."""
         reader = Reader(rating_scale=(1, 5))
         data = Dataset.load_from_df(
             ratings[["user_id", "book_id", "rating"]].astype({"user_id": str, "book_id": str}),
@@ -67,7 +88,7 @@ class CollaborativeFilteringEngine:
         *,
         limit: int = 10,
     ) -> list[tuple[str, float]]:
-        if self._model is None:
+        if self._model is None or not candidate_book_ids:
             return []
         scored = [
             (bid, float(self._model.predict(str(user_id), str(bid)).est))

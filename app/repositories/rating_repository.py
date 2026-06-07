@@ -5,6 +5,7 @@ from __future__ import annotations
 from sqlalchemy import Select, func, select
 from sqlalchemy.orm import Session
 
+from app.db.models.book import Book
 from app.db.models.rating import Rating
 from app.repositories.base import BaseRepository
 
@@ -29,3 +30,11 @@ class RatingRepository(BaseRepository[Rating]):
     def get_user_book_rating(self, user_id: int, book_id: int) -> Rating | None:
         stmt = select(Rating).where(Rating.user_id == user_id, Rating.book_id == book_id)
         return self.session.scalars(stmt).first()
+
+    def rated_source_book_ids(self, user_id: int) -> list[str]:
+        stmt = (
+            select(Book.source_book_id)
+            .join(Rating, Rating.book_id == Book.id)
+            .where(Rating.user_id == user_id)
+        )
+        return [str(row) for row in self.session.scalars(stmt).all()]

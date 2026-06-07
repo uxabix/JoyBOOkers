@@ -15,11 +15,20 @@ router = APIRouter()
 
 
 @router.get("/health", response_model=HealthResponse)
-def health(settings: Settings = Depends(get_settings_dep)) -> HealthResponse:
+def health(
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings_dep),
+) -> HealthResponse:
+    db_status = "ok"
+    try:
+        db.execute(text("SELECT 1"))
+    except Exception:
+        db_status = "error"
     return HealthResponse(
+        status="ok" if db_status == "ok" else "degraded",
         app=settings.app_name,
         version=settings.app_version,
-        database="configured",
+        database=db_status,
     )
 
 
@@ -49,10 +58,7 @@ def readiness(
         models = [ModelStatusItem(**m) for m in payload["models"]]
         all_loaded = bool(payload["all_required_loaded"])
 
-    overall = "ok" if db_status == "ok" else "degraded"
-    if not all_loaded:
-        overall = "degraded"
-
+    overall = "ok" if db_status == "ok" and all_loaded else "degraded"
     return ReadinessResponse(
         status=overall,
         app=settings.app_name,

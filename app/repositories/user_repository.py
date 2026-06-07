@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.db.models.rating import Rating
 from app.db.models.user import User
 from app.repositories.base import BaseRepository
 
@@ -20,3 +21,14 @@ class UserRepository(BaseRepository[User]):
     def list_recent(self, *, limit: int = 20) -> list[User]:
         stmt = select(User).order_by(User.id.desc()).limit(limit)
         return list(self.session.scalars(stmt).all())
+
+    def list_top_by_ratings(self, *, limit: int = 20, min_ratings: int = 1) -> list[tuple[User, int]]:
+        stmt = (
+            select(User, func.count(Rating.id).label("rating_count"))
+            .join(Rating, Rating.user_id == User.id)
+            .group_by(User.id)
+            .having(func.count(Rating.id) >= min_ratings)
+            .order_by(func.count(Rating.id).desc())
+            .limit(limit)
+        )
+        return [(row[0], int(row[1])) for row in self.session.execute(stmt).all()]

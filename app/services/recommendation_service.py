@@ -51,8 +51,31 @@ class RecommendationService:
                 algo = "content_fallback"
 
         items = self._to_items(pairs, algorithm=algo)
-        self._persist(user_id=user_id, items=items)
+        if items:
+            self._persist(user_id=user_id, items=items)
         return RecommendationResponse(user_id=user_id, algorithm=algo, items=items)
+
+    def explain_empty(self, user_id: int) -> str:
+        user = self.cf.users.get(user_id)
+        if user is None:
+            return (
+                f"User #{user_id} not found. Use the internal database ID from the table below "
+                "(not the DS1 external id)."
+            )
+        n = self.cf.ratings.count_for_user(user_id)
+        if n < self.settings.min_cf_ratings_per_user:
+            return (
+                f"User #{user_id} has only {n} rating(s) in the database; "
+                f"at least {self.settings.min_cf_ratings_per_user} are required. "
+                "Try a user from the list below or run "
+                "`python scripts/load_db.py` with a higher `--ratings-limit`."
+            )
+        if not self.cf.engine.is_loaded:
+            return "Collaborative model is not loaded. Check GET /api/v1/health/ready."
+        return (
+            "Model ran but returned no catalog matches. Try user #1 or another ID from the "
+            "table below (users sorted by rating count)."
+        )
 
     def similar_books(self, book_id: int, *, limit: int | None = None) -> RecommendationResponse:
         limit = limit or self.settings.default_recommendation_limit

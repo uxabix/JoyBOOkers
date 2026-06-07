@@ -2,9 +2,6 @@
 
 from __future__ import annotations
 
-from collections.abc import Generator
-from functools import lru_cache
-
 from fastapi import Depends, Request
 from sqlalchemy.orm import Session
 
@@ -12,21 +9,27 @@ from app.config import Settings, get_settings
 from app.db.session import get_db
 from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
+from app.ml.registry import MLModelRegistry
 from app.ml.sentiment import SentimentEngine
 from app.services.book_service import BookService
 from app.services.collaborative_filtering_service import CollaborativeFilteringService
 from app.services.content_recommendation_service import ContentRecommendationService
 from app.services.rating_service import RatingService
 from app.services.recommendation_service import RecommendationService
-from app.services.sentiment_service import SentimentService
 from app.services.reports_service import ReportsService
-from app.ml.registry import MLModelRegistry
+from app.services.sentiment_service import SentimentService
 from app.services.user_service import UserService
 from app.templates_env import get_templates_engine
 
 
-def get_settings_dep() -> Settings:
-    return get_settings()
+def get_settings_dep(request: Request) -> Settings:
+    return request.app.state.settings
+
+
+def _ensure_ml_loaded(request: Request) -> MLModelRegistry:
+    registry: MLModelRegistry = request.app.state.ml_registry
+    registry.ensure_loaded()
+    return registry
 
 
 def get_ml_registry(request: Request) -> MLModelRegistry:
@@ -34,15 +37,15 @@ def get_ml_registry(request: Request) -> MLModelRegistry:
 
 
 def get_cf_engine(request: Request) -> CollaborativeFilteringEngine:
-    return request.app.state.cf_engine
+    return _ensure_ml_loaded(request).cf_engine
 
 
 def get_content_engine(request: Request) -> ContentRecommendationEngine:
-    return request.app.state.content_engine
+    return _ensure_ml_loaded(request).content_engine
 
 
 def get_sentiment_engine(request: Request) -> SentimentEngine:
-    return request.app.state.sentiment_engine
+    return _ensure_ml_loaded(request).sentiment_engine
 
 
 def get_book_service(db: Session = Depends(get_db)) -> BookService:
@@ -89,9 +92,8 @@ def get_sentiment_service(
     return SentimentService(db, engine)
 
 
-@lru_cache
-def get_reports_service() -> ReportsService:
-    settings = get_settings()
+def get_reports_service(request: Request) -> ReportsService:
+    settings: Settings = request.app.state.settings
     return ReportsService(settings.reports_dir)
 
 

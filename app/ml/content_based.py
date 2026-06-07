@@ -1,11 +1,11 @@
-"""Content-based recommendations — sklearn cosine on sparse TF-IDF/BoW (DS2+DS3)."""
+"""Content-based recommendations — sparse dot product on L2-normalized TF-IDF rows."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
+from scipy import sparse
 
 from app.logging_config import get_logger
 from app.ml.sparse_loader import SparseMatrixBundle, load_sparse_bundle
@@ -14,8 +14,6 @@ logger = get_logger(__name__)
 
 
 class ContentRecommendationEngine:
-    """Similar-book retrieval using precomputed sparse content vectors."""
-
     def __init__(
         self,
         matrix_path: Path,
@@ -50,12 +48,21 @@ class ContentRecommendationEngine:
             return []
 
         query = self._bundle.matrix[idx]
-        sims = cosine_similarity(query, self._bundle.matrix).ravel()
+        scores = self._bundle.matrix @ query.T
+
+        if sparse.issparse(scores):
+            sims = np.asarray(scores.toarray()).ravel()
+        else:
+            sims = np.asarray(scores).ravel()
 
         if exclude_self:
             sims[idx] = -1.0
 
-        top_idx = np.argpartition(-sims, min(limit, len(sims) - 1))[:limit]
+        k = min(limit, max(0, len(sims) - 1))
+        if k == 0:
+            return []
+
+        top_idx = np.argpartition(-sims, k)[: k + 1]
         top_idx = top_idx[np.argsort(-sims[top_idx])]
 
         results: list[tuple[str, float]] = []
@@ -63,4 +70,6 @@ class ContentRecommendationEngine:
             if sims[i] <= 0:
                 continue
             results.append((str(self._bundle.book_ids[i]), float(sims[i])))
-        return results[:limit]
+            if len(results) >= limit:
+                break
+        return results

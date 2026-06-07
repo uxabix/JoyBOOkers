@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from sqlalchemy.engine.url import make_url
 
 from app.config import Settings
-from app.db.session import engine, init_db
+from app.db.session import configure_engine, dispose_engine, init_db
 from app.logging_config import get_logger, setup_logging
 from app.ml.registry import MLModelRegistry
 from app.templates_env import build_templates_engine, clear_templates_cache
@@ -22,12 +22,10 @@ def _ensure_sqlite_parent(settings: Settings) -> None:
     url = make_url(settings.database_url)
     if not url.database or url.database == ":memory:":
         return
-    db_path = Path(url.database)
-    db_path.parent.mkdir(parents=True, exist_ok=True)
+    Path(url.database).parent.mkdir(parents=True, exist_ok=True)
 
 
 def on_startup(app: FastAPI, settings: Settings) -> None:
-    """Ordered boot: logging → directories → database → templates → ML models."""
     setup_logging(level=settings.log_level, log_dir=settings.log_dir)
     logger.info("=== %s v%s — startup ===", settings.app_name, settings.app_version)
 
@@ -36,16 +34,21 @@ def on_startup(app: FastAPI, settings: Settings) -> None:
     settings.reports_dir.mkdir(parents=True, exist_ok=True)
 
     _ensure_sqlite_parent(settings)
-    init_db()
+    db_engine = configure_engine(settings.database_url, echo=settings.debug)
+    init_db(db_engine)
+    app.state.db_engine = db_engine
     logger.info("Database ready: %s", settings.database_url)
 
     clear_templates_cache()
-    templates = build_templates_engine(settings)
-    app.state.templates = templates
+    app.state.templates = build_templates_engine(settings)
     logger.info("Templates registered: %s", settings.templates_dir)
 
     registry = MLModelRegistry(settings)
-    registry.load_all()
+    if settings.ml_eager_load:
+        registry.load_all()
+    else:
+        registry.register_status_only()
+
     app.state.ml_registry = registry
     app.state.cf_engine = registry.cf_engine
     app.state.content_engine = registry.content_engine
@@ -56,6 +59,6 @@ def on_startup(app: FastAPI, settings: Settings) -> None:
 
 
 def on_shutdown(app: FastAPI) -> None:
-    logger.info("=== shutdown — disposing database engine ===")
-    engine.dispose()
+    logger.info("=== shutdown ===")
+    dispose_engine()
     logger.info("=== shutdown complete ===")

@@ -25,6 +25,12 @@ class BookRepository(BaseRepository[Book]):
         stmt = select(Book).where(Book.source_book_id == source_book_id)
         return self.session.scalars(stmt).first()
 
+    def existing_source_ids(self, source_ids: list[str]) -> set[str]:
+        if not source_ids:
+            return set()
+        stmt = select(Book.source_book_id).where(Book.source_book_id.in_(source_ids))
+        return {str(row) for row in self.session.scalars(stmt).all()}
+
     def search(
         self,
         *,
@@ -33,7 +39,7 @@ class BookRepository(BaseRepository[Book]):
         offset: int = 0,
         limit: int = 20,
     ) -> tuple[list[Book], int]:
-        stmt: Select[tuple[Book]] = select(Book).options(joinedload(Book.enrichment))
+        stmt: Select[tuple[Book]] = select(Book)
         count_stmt = select(func.count()).select_from(Book)
 
         if q:
@@ -49,7 +55,7 @@ class BookRepository(BaseRepository[Book]):
 
         total = int(self.session.scalar(count_stmt) or 0)
         rows = list(
-            self.session.scalars(stmt.order_by(Book.title).offset(offset).limit(limit)).unique().all()
+            self.session.scalars(stmt.order_by(Book.title).offset(offset).limit(limit)).all()
         )
         return rows, total
 
