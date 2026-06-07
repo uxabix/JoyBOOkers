@@ -6,6 +6,7 @@ University project: collaborative filtering, content-based recommendations, sent
 
 | Language | Document |
 |----------|----------|
+| **Polski** (pełna dokumentacja projektu) | [DOKUMENTACJA_PROJEKTU.md](DOKUMENTACJA_PROJEKTU.md) |
 | **Polski** (etap danych i ML, wyniki) | [ETAP_DANYCH_I_ML.md](ETAP_DANYCH_I_ML.md) |
 | Reports (JSON metrics in git) | [reports/README.md](reports/README.md) |
 | Raw data layout | [data/raw/README.txt](data/raw/README.txt) |
