@@ -1,5 +1,8 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
-  <p class="text-muted small mb-0">{{ result.total }} book{{ "s" if result.total != 1 else "" }} found</p>
+  <p class="text-muted small mb-0">
+    {{ result.total }} book{{ "s" if result.total != 1 else "" }} found
+    {% if author_name %}<span class="text-muted"> &middot; author: <strong>{{ author_name }}</strong></span>{% endif %}
+  </p>
   {% if result.total > 0 %}
   <span class="badge text-bg-light text-dark">Page {{ result.page }} / {{ result.pages }}</span>
   {% endif %}
@@ -12,12 +15,12 @@
   <div class="col-12">
     <div class="alert alert-info mb-0">
       <i class="bi bi-inbox me-1"></i>
-      No books match your search. Import the catalog into SQLite or add books via the API.
+      No books match your filters. Try clearing filters or run <code>python scripts/load_db.py</code>.
     </div>
   </div>
   {% endfor %}
 </div>
 
-{% with base_url="/books", hx_target="#book-results" %}
+{% with base_url=base_url or '/books', hx_target='#book-results', query_string=book_query %}
 {% include "partials/_pagination.html" %}
 {% endwith %}

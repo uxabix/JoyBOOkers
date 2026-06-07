@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Authors — {{ app_name }}{% endblock %}
+{% block content %}
+{% set title = "Authors" %}
+{% set subtitle = "Writers in the catalog — books and aggregated rating statistics" %}
+{% set badge = result.total ~ " authors" %}
+{% include "partials/_page_header.html" %}
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <form class="row g-2 align-items-end"
+          hx-get="/authors"
+          hx-target="#author-results"
+          hx-push-url="true"
+          hx-trigger="keyup changed delay:400ms from:input, change from:select, submit">
+      <div class="col-md-5">
+        <label class="form-label small mb-1" for="author-q">Search author</label>
+        <input type="search" id="author-q" name="q" class="form-control" value="{{ author_params.q or '' }}" placeholder="e.g. Tolkien">
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small mb-1" for="author-sort">Sort</label>
+        <select id="author-sort" name="sort" class="form-select">
+          <option value="book_count_desc"{% if author_params.sort == 'book_count_desc' %} selected{% endif %}>Most books</option>
+          <option value="rating_count_desc"{% if author_params.sort == 'rating_count_desc' %} selected{% endif %}>Most ratings</option>
+          <option value="name_asc"{% if author_params.sort == 'name_asc' %} selected{% endif %}>Name A–Z</option>
+          <option value="db_rating_desc"{% if author_params.sort == 'db_rating_desc' %} selected{% endif %}>Highest DB avg</option>
+          <option value="catalog_rating_desc"{% if author_params.sort == 'catalog_rating_desc' %} selected{% endif %}>Catalog avg</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small mb-1" for="min_books">Min books</label>
+        <input type="number" id="min_books" name="min_books" class="form-control" min="1" value="{{ author_params.min_books }}">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Search</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="author-results">
+  {% include "authors/_list_results.html" %}
+</div>
+{% endblock %}

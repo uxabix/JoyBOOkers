@@ -2,32 +2,34 @@
 {% block title %}Book search — {{ app_name }}{% endblock %}
 {% block content %}
 {% set title = "Book search" %}
-{% set subtitle = "Content catalog from DS2 (Goodreads 100k) with DS3 enrichment" %}
+{% set subtitle = "Paginated catalog — 12 books per page, stats loaded from indexed columns" %}
 {% set badge = "DS2 + DS3" %}
 {% include "partials/_page_header.html" %}
 
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a href="/books?sort=rating_count_desc&amp;min_ratings=1" class="btn btn-sm btn-primary"
+     title="Books with the most user ratings in the database">
+    <i class="bi bi-bar-chart me-1"></i>Most rated
+  </a>
+  <a href="/books?sort=db_rating_desc&amp;min_ratings=3" class="btn btn-sm btn-warning"
+     title="Highest average score among books with at least 3 ratings">
+    <i class="bi bi-star-fill me-1"></i>Top rated
+  </a>
+  <a href="/authors" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-people me-1"></i>Browse authors
+  </a>
+</div>
+
+<p class="small text-muted mb-3">
+  <strong>Most rated</strong> — больше всего оценок в БД.
+  <strong>Top rated</strong> — самый высокий средний балл (минимум 3 оценки).
+</p>
+
 <div class="card shadow-sm border-0 mb-4">
   <div class="card-body">
-    <form class="row g-3"
-          hx-get="/books"
-          hx-target="#book-results"
-          hx-indicator="#book-spinner"
-          hx-trigger="keyup changed delay:400ms from:input, submit"
-          hx-push-url="true">
-      <div class="col-md-5">
-        <label class="form-label" for="search-q">Title or author</label>
-        <input type="search" id="search-q" name="q" class="form-control" placeholder="e.g. Tolkien" value="{{ q }}">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label" for="search-genre">Genre</label>
-        <input type="text" id="search-genre" name="genre" class="form-control" placeholder="e.g. Fantasy" value="{{ genre }}">
-      </div>
-      <div class="col-md-3 d-flex align-items-end">
-        <button class="btn btn-primary w-100" type="submit">
-          <i class="bi bi-search me-1"></i>Search
-        </button>
-      </div>
-    </form>
+    {% with filter_action='/books', hx_target='#book-results' %}
+    {% include "books/_filters.html" %}
+    {% endwith %}
   </div>
 </div>
 

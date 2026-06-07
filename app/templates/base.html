@@ -29,6 +29,9 @@
             <a class="nav-link{% if request.url.path.startswith('/books') and request.url.path != '/books/similar' %} active{% endif %}" href="/books">Books</a>
           </li>
           <li class="nav-item">
+            <a class="nav-link{% if request.url.path.startswith('/authors') %} active{% endif %}" href="/authors">Authors</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link{% if request.url.path == '/books/similar' %} active{% endif %}" href="/books/similar">Similar</a>
           </li>
           <li class="nav-item">

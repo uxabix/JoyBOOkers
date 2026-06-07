@@ -1,0 +1,44 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <p class="text-muted small mb-0">{{ result.total }} author{{ "s" if result.total != 1 else "" }}</p>
+  {% if result.pages > 1 %}
+  <span class="badge text-bg-light text-dark">Page {{ result.page }} / {{ result.pages }}</span>
+  {% endif %}
+</div>
+
+{% if result.items %}
+<div class="table-responsive card border-0 shadow-sm">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Author</th>
+        <th class="text-end">Books</th>
+        <th class="text-end">Ratings (DB)</th>
+        <th class="text-end">DB avg</th>
+        <th class="text-end">Catalog avg</th>
+        <th class="text-end"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in result.items %}
+      <tr>
+        <td class="fw-medium">{{ a.name }}</td>
+        <td class="text-end"><span class="badge text-bg-secondary">{{ a.book_count }}</span></td>
+        <td class="text-end">{{ a.rating_count }}</td>
+        <td class="text-end">{% if a.db_avg_rating %}{{ "%.2f"|format(a.db_avg_rating) }}&#9733;{% else %}—{% endif %}</td>
+        <td class="text-end">{% if a.catalog_avg_rating %}{{ "%.2f"|format(a.catalog_avg_rating) }}&#9733;{% else %}—{% endif %}</td>
+        <td class="text-end">
+          <a href="/authors/by/{{ a.name | urlencode }}" class="btn btn-sm btn-outline-primary">View books</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% with base_url='/authors', query_string=author_query %}
+{% include "partials/_pagination.html" %}
+{% endwith %}
+
+{% else %}
+<div class="alert alert-info mb-0">No authors found. Load the book catalog into SQLite first.</div>
+{% endif %}

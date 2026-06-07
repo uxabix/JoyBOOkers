@@ -12,6 +12,7 @@ from app.ml.content_based import ContentRecommendationEngine
 from app.ml.registry import MLModelRegistry
 from app.ml.sentiment import SentimentEngine
 from app.ml.user_clustering import UserClusteringEngine
+from app.services.author_service import AuthorService
 from app.services.book_service import BookService
 from app.services.clustering_service import ClusteringService
 from app.services.cold_start_service import ColdStartService
@@ -60,6 +61,10 @@ def get_clustering_engine(request: Request) -> UserClusteringEngine:
 
 def get_book_service(db: Session = Depends(get_db)) -> BookService:
     return BookService(db)
+
+
+def get_author_service(db: Session = Depends(get_db)) -> AuthorService:
+    return AuthorService(db)
 
 
 def get_user_service(

@@ -18,11 +18,30 @@ router = APIRouter()
 def search_books(
     q: str | None = Query(default=None),
     genre: str | None = Query(default=None),
+    author: str | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=100),
+    sort: str = Query(default="title_asc"),
+    min_ratings: int = Query(default=0, ge=0),
+    max_ratings: int | None = Query(default=None, ge=0),
+    min_db_rating: float | None = Query(default=None, ge=1.0, le=5.0),
+    max_db_rating: float | None = Query(default=None, ge=1.0, le=5.0),
+    min_catalog_rating: float | None = Query(default=None, ge=0.0, le=5.0),
     service: BookService = Depends(get_book_service),
 ) -> PaginatedResponse[BookRead]:
-    params = BookSearchParams(q=q, genre=genre, page=page, page_size=page_size)
+    params = BookSearchParams(
+        q=q,
+        genre=genre,
+        author=author,
+        page=page,
+        page_size=page_size,
+        sort=sort,
+        min_ratings=min_ratings,
+        max_ratings=max_ratings,
+        min_db_rating=min_db_rating,
+        max_db_rating=max_db_rating,
+        min_catalog_rating=min_catalog_rating,
+    )
     return service.search(params)
 
 

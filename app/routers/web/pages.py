@@ -18,6 +18,7 @@ from app.dependencies import (
     get_templates,
     get_user_service,
 )
+from app.routers.web.query_strings import book_query
 from app.schemas.book import BookSearchParams
 from app.schemas.sentiment import SentimentPredictRequest
 from app.schemas.user import UserCreate
@@ -30,6 +31,32 @@ from app.services.sentiment_service import SentimentService
 from app.services.user_service import UserService
 
 router = APIRouter()
+
+
+def _book_search_params(
+    q: str | None = Query(default=None),
+    genre: str | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=12, ge=1, le=100),
+    sort: str = Query(default="title_asc"),
+    min_ratings: int = Query(default=0, ge=0),
+    max_ratings: int | None = Query(default=None, ge=0),
+    min_db_rating: float | None = Query(default=None, ge=1.0, le=5.0),
+    max_db_rating: float | None = Query(default=None, ge=1.0, le=5.0),
+    min_catalog_rating: float | None = Query(default=None, ge=0.0, le=5.0),
+) -> BookSearchParams:
+    return BookSearchParams(
+        q=q,
+        genre=genre,
+        page=page,
+        page_size=page_size,
+        sort=sort,
+        min_ratings=min_ratings,
+        max_ratings=max_ratings,
+        min_db_rating=min_db_rating,
+        max_db_rating=max_db_rating,
+        min_catalog_rating=min_catalog_rating,
+    )
 
 
 def _ctx(request: Request, settings: Settings, **extra):
@@ -60,18 +87,22 @@ def home(
 @router.get("/books", response_class=HTMLResponse)
 def books_page(
     request: Request,
-    q: str | None = Query(default=None),
-    genre: str | None = Query(default=None),
-    page: int = Query(default=1, ge=1),
+    params: BookSearchParams = Depends(_book_search_params),
     service: BookService = Depends(get_book_service),
     settings: Settings = Depends(get_settings_dep),
 ):
-    result = service.search(BookSearchParams(q=q, genre=genre, page=page, page_size=12))
+    result = service.search(params)
     template = "books/_search_results.html" if request.headers.get("HX-Request") else "books/list.html"
     return get_templates(request).TemplateResponse(
         request,
         template,
-        _ctx(request, settings, result=result, q=q or "", genre=genre or "", page=page),
+        _ctx(
+            request,
+            settings,
+            result=result,
+            book_params=params,
+            book_query=book_query(params),
+        ),
     )
 
 

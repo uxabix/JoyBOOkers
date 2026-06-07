@@ -1,0 +1,44 @@
+<form class="row g-2 align-items-end"
+      {% if filter_action %}action="{{ filter_action }}"{% endif %}
+      {% if hx_target %}
+      hx-get="{{ filter_action or '/books' }}"
+      hx-target="{{ hx_target }}"
+      hx-indicator="#book-spinner"
+      hx-trigger="change from:select, submit"
+      hx-push-url="true"
+      {% endif %}>
+  <div class="col-md-3">
+    <label class="form-label small mb-1" for="search-q">Title or author</label>
+    <input type="search" id="search-q" name="q" class="form-control form-control-sm"
+           placeholder="Search…" value="{{ book_params.q or '' }}">
+  </div>
+  <div class="col-md-2">
+    <label class="form-label small mb-1" for="search-genre">Genre</label>
+    <input type="text" id="search-genre" name="genre" class="form-control form-control-sm"
+           placeholder="Fantasy" value="{{ book_params.genre or '' }}">
+  </div>
+  <div class="col-6 col-md-2">
+    <label class="form-label small mb-1" for="min_ratings">Min ratings</label>
+    <input type="number" id="min_ratings" name="min_ratings" class="form-control form-control-sm"
+           min="0" value="{{ book_params.min_ratings if book_params.min_ratings else '' }}" placeholder="0">
+  </div>
+  <div class="col-6 col-md-2">
+    <label class="form-label small mb-1" for="min_db_rating">Min avg (DB)</label>
+    <input type="number" id="min_db_rating" name="min_db_rating" class="form-control form-control-sm"
+           min="1" max="5" step="0.1" value="{{ book_params.min_db_rating or '' }}" placeholder="—">
+  </div>
+  <div class="col-md-2">
+    <label class="form-label small mb-1" for="sort">Sort by</label>
+    <select id="sort" name="sort" class="form-select form-select-sm">
+      <option value="title_asc"{% if book_params.sort == 'title_asc' %} selected{% endif %}>Title A–Z</option>
+      <option value="title_desc"{% if book_params.sort == 'title_desc' %} selected{% endif %}>Title Z–A</option>
+      <option value="rating_count_desc"{% if book_params.sort == 'rating_count_desc' %} selected{% endif %}>Most ratings</option>
+      <option value="db_rating_desc"{% if book_params.sort == 'db_rating_desc' %} selected{% endif %}>Highest DB average</option>
+      <option value="catalog_rating_desc"{% if book_params.sort == 'catalog_rating_desc' %} selected{% endif %}>Catalog rating</option>
+    </select>
+  </div>
+  <div class="col-md-1 d-flex gap-1">
+    <button class="btn btn-primary btn-sm w-100" type="submit" title="Apply filters"><i class="bi bi-search"></i></button>
+  </div>
+  <input type="hidden" name="page" value="1">
+</form>

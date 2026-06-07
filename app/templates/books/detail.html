@@ -47,11 +47,23 @@
   </div>
   <div class="col-lg-8">
     <h1 class="h2">{{ book.title }}</h1>
-    <p class="lead text-muted">{{ book.author or "Unknown author" }}</p>
+    <p class="lead text-muted">
+      {% if book.author %}
+      <a href="/authors/by/{{ book.author | urlencode }}" class="text-muted text-decoration-none">{{ book.author }}</a>
+      {% else %}Unknown author{% endif %}
+    </p>
 
-    {% if book.avg_rating %}
-    <span class="badge text-bg-warning fs-6 mb-3">{{ "%.2f"|format(book.avg_rating) }} &#9733; average</span>
-    {% endif %}
+    <div class="d-flex flex-wrap gap-2 mb-3">
+      {% if book.rating_count %}
+      <span class="badge text-bg-primary fs-6">{{ book.rating_count }} rating{{ "s" if book.rating_count != 1 else "" }} in DB</span>
+      {% endif %}
+      {% if book.db_avg_rating %}
+      <span class="badge text-bg-success fs-6">DB avg {{ "%.2f"|format(book.db_avg_rating) }}&#9733;</span>
+      {% endif %}
+      {% if book.avg_rating %}
+      <span class="badge text-bg-warning fs-6">Catalog {{ "%.2f"|format(book.avg_rating) }}&#9733;</span>
+      {% endif %}
+    </div>
 
     {% if book.description %}
     <div class="card border-0 bg-white shadow-sm mb-4">

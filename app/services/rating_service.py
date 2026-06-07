@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from sqlalchemy.orm import Session
 
+from app.db.book_stats import refresh_book_rating_stats
 from app.db.models.rating import Rating
 from app.repositories.book_repository import BookRepository
 from app.repositories.rating_repository import RatingRepository
@@ -36,7 +37,7 @@ class RatingService:
                 existing.rated_at = payload.rated_at
             self.session.commit()
             self.session.refresh(existing)
-            self._after_rating(payload.user_id)
+            self._after_rating(payload.user_id, payload.book_id)
             return RatingRead.model_validate(existing)
 
         rating = Rating(
@@ -49,10 +50,12 @@ class RatingService:
         self.repo.add(rating)
         self.session.commit()
         self.session.refresh(rating)
-        self._after_rating(payload.user_id)
+        self._after_rating(payload.user_id, payload.book_id)
         return RatingRead.model_validate(rating)
 
-    def _after_rating(self, user_id: int) -> None:
+    def _after_rating(self, user_id: int, book_id: int) -> None:
+        refresh_book_rating_stats(self.session, book_id)
+        self.session.commit()
         if self.clustering is not None:
             self.clustering.update_user_cluster(user_id)
 

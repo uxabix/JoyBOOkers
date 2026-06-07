@@ -9,13 +9,23 @@
       <h5 class="card-title fs-6">
         <a href="/books/{{ book.id }}" class="text-decoration-none stretched-link">{{ book.title }}</a>
       </h5>
-      <p class="card-subtitle text-muted small mb-2">{{ book.author or "Unknown author" }}</p>
+      <p class="card-subtitle text-muted small mb-2">
+        {% if book.author %}
+        <a href="/authors/by/{{ book.author | urlencode }}" class="text-muted text-decoration-none z-1 position-relative">{{ book.author }}</a>
+        {% else %}Unknown author{% endif %}
+      </p>
       {% if book.genre %}
       <p class="card-text small text-truncate text-secondary mb-2" title="{{ book.genre }}">{{ book.genre }}</p>
       {% endif %}
-      <div class="mt-auto">
+      <div class="mt-auto d-flex flex-wrap gap-1">
+        {% if book.rating_count %}
+        <span class="badge text-bg-primary" title="Ratings in database">{{ book.rating_count }} ratings</span>
+        {% endif %}
+        {% if book.db_avg_rating %}
+        <span class="badge text-bg-success" title="Average from DB ratings">{{ "%.2f"|format(book.db_avg_rating) }}&#9733; avg</span>
+        {% endif %}
         {% if book.avg_rating %}
-        <span class="badge text-bg-warning">{{ "%.2f"|format(book.avg_rating) }} &#9733;</span>
+        <span class="badge text-bg-warning" title="Catalog average">{{ "%.2f"|format(book.avg_rating) }}&#9733; cat.</span>
         {% endif %}
         {% if book.pages %}
         <span class="badge text-bg-light text-dark">{{ book.pages }} pp.</span>

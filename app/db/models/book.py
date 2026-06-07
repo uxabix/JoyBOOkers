@@ -24,6 +24,8 @@ class Book(Base, TimestampMixin):
     isbn13: Mapped[str | None] = mapped_column(String(32), nullable=True)
     pages: Mapped[int | None] = mapped_column(Integer, nullable=True)
     avg_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
+    rating_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False, index=True)
+    db_avg_rating: Mapped[float | None] = mapped_column(Float, nullable=True)
     image_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     goodreads_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
 

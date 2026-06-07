@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:
 from sqlalchemy import select
 
 from app.config import Settings, get_settings
+from app.db.book_stats import backfill_all_book_rating_stats
 from app.db.models.book import Book, BookEnrichment
 from app.db.models.rating import Rating
 from app.db.models.user import User
@@ -231,6 +232,11 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"  ratings: {n_ratings}")
         else:
             print("Skipped users/ratings (missing interactions file or --skip-ratings).")
+
+        if not args.skip_ratings:
+            print("Updating denormalized book rating stats ...")
+            n = backfill_all_book_rating_stats(session.get_bind())
+            print(f"  books with stats: {n}")
 
     print("Done.")
     return 0
