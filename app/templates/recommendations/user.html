@@ -2,8 +2,8 @@
 {% block title %}Recommendations — {{ app_name }}{% endblock %}
 {% block content %}
 {% set title = "Personalized recommendations" %}
-{% set subtitle = "Surprise SVD on DS1 ratings with content-based fallback (DS2 TF-IDF)" %}
-{% set badge = "CF + content" %}
+{% set subtitle = "Unified hybrid scoring — CF, content, cluster, and popularity for every user" %}
+{% set badge = "Hybrid" %}
 {% include "partials/_page_header.html" %}
 
 <div class="row g-4">
@@ -20,7 +20,7 @@
                    value="{{ prefill_user_id or '' }}" placeholder="e.g. 1 or 1039">
             <div class="form-text">
               <strong>Database ID</strong> (column «ID» in the table), not DS1 external id.
-              Need &ge;{{ min_cf_ratings | default(3) }} ratings.
+              Works for any user — sparse profiles use cluster + popularity; richer profiles add CF and content.
             </div>
           </div>
           <div class="mb-3">
@@ -30,9 +30,10 @@
           <div class="mb-3">
             <label class="form-label" for="algorithm">Algorithm</label>
             <select class="form-select" id="algorithm" name="algorithm">
-              <option value="auto">Auto (CF then content fallback)</option>
+              <option value="auto">Hybrid (recommended)</option>
+              <option value="hybrid">Hybrid — unified scoring</option>
               <option value="collaborative">Collaborative only (DS1 SVD)</option>
-              <option value="hybrid">Hybrid / content fallback</option>
+              <option value="content">Content only (TF-IDF)</option>
             </select>
           </div>
           <button type="submit" class="btn btn-primary w-100">

@@ -8,6 +8,7 @@ from typing import Any
 
 from app.config import Settings
 from app.logging_config import get_logger
+from app.ml.cluster_affinity import ClusterAffinityStore
 from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
 from app.ml.sentiment import SentimentEngine
@@ -31,6 +32,7 @@ class MLModelRegistry:
     content_engine: ContentRecommendationEngine = field(init=False)
     sentiment_engine: SentimentEngine = field(init=False)
     clustering_engine: UserClusteringEngine = field(init=False)
+    cluster_affinity: ClusterAffinityStore = field(init=False)
     statuses: list[ModelStatus] = field(default_factory=list)
     _loaded: bool = False
 
@@ -47,6 +49,7 @@ class MLModelRegistry:
             self.settings.clustering_features_dir,
             self.settings.clustering_report_path,
         )
+        self.cluster_affinity = ClusterAffinityStore(self.settings.cluster_affinity_path)
 
     def _content_matrix_path(self) -> Path:
         if self.settings.content_tfidf_path.is_file():
@@ -59,6 +62,7 @@ class MLModelRegistry:
             ModelStatus("content_tfidf", str(self._content_matrix_path()), False, "lazy load"),
             ModelStatus("sentiment", str(self.settings.sentiment_model_path), False, "lazy load"),
             self._load_one("clustering", self.settings.clustering_model_path, self.clustering_engine.load),
+            self._load_one("cluster_affinity", self.settings.cluster_affinity_path, self.cluster_affinity.load),
         ]
 
     def ensure_loaded(self) -> None:
@@ -71,6 +75,7 @@ class MLModelRegistry:
             self._load_one("content_tfidf", self._content_matrix_path(), self.content_engine.load),
             self._load_one("sentiment", self.settings.sentiment_model_path, self.sentiment_engine.load),
             self._load_one("clustering", self.settings.clustering_model_path, self.clustering_engine.load),
+            self._load_one("cluster_affinity", self.settings.cluster_affinity_path, self.cluster_affinity.load),
         ]
         self._loaded = True
         loaded = sum(1 for s in self.statuses if s.loaded)

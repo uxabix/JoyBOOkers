@@ -73,3 +73,62 @@ class ContentRecommendationEngine:
             if len(results) >= limit:
                 break
         return results
+
+    def build_user_vector(
+        self,
+        rated: list[tuple[str, float]],
+        *,
+        max_books: int = 10,
+    ) -> sparse.csr_matrix | None:
+        """Weighted average TF-IDF vector from rated books (rating as weight)."""
+        if self._bundle is None or not rated:
+            return None
+
+        rows: list[sparse.csr_matrix] = []
+        weights: list[float] = []
+        for source_id, score in rated[:max_books]:
+            idx = self._bundle.index_for_book(str(source_id))
+            if idx is None:
+                continue
+            rows.append(self._bundle.matrix[idx])
+            weights.append(max(float(score), 1.0))
+
+        if not rows:
+            return None
+
+        w = np.asarray(weights, dtype=np.float64)
+        w /= w.sum()
+        combined = sum(w[i] * rows[i] for i in range(len(rows)))
+        norm = sparse.linalg.norm(combined)
+        if norm > 0:
+            combined = combined / norm
+        return combined.tocsr()
+
+    def score_candidates(
+        self,
+        user_vector: sparse.csr_matrix,
+        source_book_ids: list[str],
+    ) -> dict[str, float]:
+        """Cosine similarity between user profile vector and candidate books."""
+        if self._bundle is None or not source_book_ids:
+            return {}
+
+        indices: list[int] = []
+        ids: list[str] = []
+        for sid in source_book_ids:
+            idx = self._bundle.index_for_book(str(sid))
+            if idx is not None:
+                indices.append(idx)
+                ids.append(str(sid))
+
+        if not indices:
+            return {}
+
+        sub = self._bundle.matrix[indices]
+        scores = sub @ user_vector.T
+        if sparse.issparse(scores):
+            sims = np.asarray(scores.toarray(), dtype=np.float64).ravel()
+        else:
+            sims = np.asarray(scores, dtype=np.float64).ravel()
+        sims = np.maximum(sims, 0.0)
+        return {ids[i]: float(sims[i]) for i in range(len(ids))}

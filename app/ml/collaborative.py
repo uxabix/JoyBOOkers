@@ -26,6 +26,7 @@ class CollaborativeFilteringEngine:
         self.train_items_path = train_items_path
         self._model: SVD | None = None
         self._train_item_ids: set[str] | None = None
+        self._train_user_ids: set[str] | None = None
 
     @property
     def is_loaded(self) -> bool:
@@ -46,15 +47,26 @@ class CollaborativeFilteringEngine:
             return
         if self.train_items_path is None or not self.train_items_path.exists():
             self._train_item_ids = set()
+            self._train_user_ids = set()
             return
         df = read_table(self.train_items_path)
         self._train_item_ids = set(df["book_id"].astype(str).unique())
-        logger.info("CF train item catalog: %s unique books", len(self._train_item_ids))
+        self._train_user_ids = set(df["user_id"].astype(str).unique())
+        logger.info(
+            "CF train catalog: %s users, %s books",
+            len(self._train_user_ids),
+            len(self._train_item_ids),
+        )
 
     def train_item_ids(self) -> set[str]:
         if self._train_item_ids is None:
             self._load_train_item_ids()
         return self._train_item_ids or set()
+
+    def known_user_ids(self) -> set[str]:
+        if self._train_user_ids is None:
+            self._load_train_item_ids()
+        return self._train_user_ids or set()
 
     def train_from_ratings_df(self, ratings: pd.DataFrame, *, save: bool = True) -> dict[str, float]:
         reader = Reader(rating_scale=(1, 5))

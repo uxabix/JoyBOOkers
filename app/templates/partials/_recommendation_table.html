@@ -23,6 +23,14 @@
         <td class="small">{{ item.book.author or "—" }}</td>
         <td class="text-end">
           <span class="badge text-bg-primary">{{ "%.3f"|format(item.score) }}</span>
+          {% if item.score_breakdown %}
+          <div class="small text-muted mt-1" style="font-size:0.7rem">
+            C{{ "%.2f"|format(item.score_breakdown.content) }}
+            F{{ "%.2f"|format(item.score_breakdown.cf) }}
+            K{{ "%.2f"|format(item.score_breakdown.cluster) }}
+            P{{ "%.2f"|format(item.score_breakdown.popularity) }}
+          </div>
+          {% endif %}
         </td>
         <td class="text-end">
           <a href="/books/similar?book_id={{ item.book.id }}" class="btn btn-sm btn-outline-secondary">Similar</a>

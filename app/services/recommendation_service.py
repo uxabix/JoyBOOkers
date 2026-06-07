@@ -1,4 +1,4 @@
-"""Orchestrates CF (DS1) and content-based (DS2+DS3) recommenders."""
+"""Unified hybrid recommender — single scoring path for all users."""
 
 from __future__ import annotations
 
@@ -6,14 +6,23 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings
 from app.db.models.recommendation import Recommendation
+from app.ml.cluster_affinity import ClusterAffinityStore
+from app.ml.collaborative import CollaborativeFilteringEngine
+from app.ml.content_based import ContentRecommendationEngine
+from app.ml.hybrid_scoring import HybridScoringEngine, ScoredCandidate
+from app.ml.user_clustering import UserClusteringEngine
+from app.ml.user_profile import UserProfileBuilder, blend_signal_weights
 from app.repositories.book_repository import BookRepository
 from app.repositories.recommendation_repository import RecommendationRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.book import BookRead
-from app.schemas.recommendation import RecommendationItem, RecommendationResponse
-from app.services.cold_start_service import ColdStartService
+from app.schemas.recommendation import (
+    RecommendationItem,
+    RecommendationResponse,
+    ScoreBreakdown,
+    UserProfileSummary,
+)
 from app.services.collaborative_filtering_service import CollaborativeFilteringService
-from app.services.content_recommendation_service import ContentRecommendationService
 
 
 class RecommendationService:
@@ -21,18 +30,40 @@ class RecommendationService:
         self,
         session: Session,
         cf_service: CollaborativeFilteringService,
-        content_service: ContentRecommendationService,
-        cold_start_service: ColdStartService,
+        cf_engine: CollaborativeFilteringEngine,
+        content_engine: ContentRecommendationEngine,
+        clustering_engine: UserClusteringEngine,
+        cluster_affinity: ClusterAffinityStore,
         settings: Settings,
     ) -> None:
         self.session = session
         self.cf = cf_service
-        self.content = content_service
-        self.cold_start = cold_start_service
+        self.cf_engine = cf_engine
+        self.content_engine = content_engine
+        self.clustering_engine = clustering_engine
+        self.cluster_affinity = cluster_affinity
         self.settings = settings
         self.books = BookRepository(session)
         self.users = UserRepository(session)
         self.history = RecommendationRepository(session)
+
+        if not self.cf_engine.is_loaded:
+            self.cf_engine.load()
+        known_users = self.cf_engine.known_user_ids() if self.cf_engine.is_loaded else set()
+        self.profile_builder = UserProfileBuilder(
+            session,
+            clustering_engine,
+            settings,
+            cf_known_user_ids=known_users,
+        )
+        self.hybrid = HybridScoringEngine(
+            session,
+            cf_engine,
+            cf_service,
+            content_engine,
+            cluster_affinity,
+            settings,
+        )
 
     def recommend_for_user(
         self,
@@ -42,33 +73,44 @@ class RecommendationService:
         algorithm: str = "auto",
     ) -> RecommendationResponse:
         limit = limit or self.settings.default_recommendation_limit
-        user = self.users.get(user_id)
+        profile = self.profile_builder.build(user_id)
+        if profile is None:
+            return RecommendationResponse(user_id=user_id, algorithm=algorithm, items=[])
+
         algo = algorithm
-        pairs: list[tuple[int, float]] = []
-
-        if user and user.is_registered:
-            pairs = self.cold_start.recommend_for_user(user_id, limit=limit)
-            n = self.cf.ratings.count_for_user(user_id)
-            algo = "cold_start" if n == 0 else "content_profile"
+        if algo in ("auto", "hybrid"):
+            scored = self.hybrid.recommend(profile, limit=limit)
+            algo = "hybrid"
+        elif algo == "collaborative":
+            scored = self.hybrid.recommend_cf_only(profile, limit=limit)
+            algo = "collaborative"
+        elif algo == "content":
+            scored = self.hybrid.recommend_content_only(profile, limit=limit)
+            algo = "content"
         else:
-            if algo in ("collaborative", "auto"):
-                pairs = self.cf.recommend_for_user(user_id, limit=limit)
-                algo = "collaborative" if pairs else algo
+            scored = self.hybrid.recommend(profile, limit=limit)
+            algo = "hybrid"
 
-            if not pairs and algo in ("hybrid", "auto", "content"):
-                rated = self.cf.ratings.list_for_user(user_id, limit=1)
-                if rated:
-                    pairs = self.content.similar_books(rated[0].book_id, limit=limit)
-                    algo = "content_fallback"
+        weights = blend_signal_weights(profile)
+        summary = UserProfileSummary(
+            cluster_id=profile.cluster_id,
+            cluster_label=profile.cluster_label,
+            rating_count=len(profile.rated_books),
+            profile_strength=profile.profile_strength,
+            top_genres=sorted(profile.genre_weights, key=profile.genre_weights.get, reverse=True)[:5],
+            cf_available=profile.cf_available,
+            weights_used=weights,
+        )
 
-            if not pairs and algo in ("hybrid", "auto"):
-                pairs = self.cold_start.recommend_for_user(user_id, limit=limit)
-                algo = "cold_start"
-
-        items = self._to_items(pairs, algorithm=algo)
+        items = self._to_items(scored, algorithm=algo)
         if items:
             self._persist(user_id=user_id, items=items)
-        return RecommendationResponse(user_id=user_id, algorithm=algo, items=items)
+        return RecommendationResponse(
+            user_id=user_id,
+            algorithm=algo,
+            items=items,
+            profile=summary,
+        )
 
     def explain_empty(self, user_id: int) -> str:
         user = self.users.get(user_id)
@@ -77,44 +119,66 @@ class RecommendationService:
                 f"User #{user_id} not found. Use the internal database ID from the table below "
                 "(not the DS1 external id)."
             )
-        if user.is_registered:
+        profile = self.profile_builder.build(user_id)
+        if profile is None:
+            return f"User #{user_id} not found."
+
+        if not self.books.list_starter_books(user_id, limit=1):
             return (
-                "No recommendations could be generated. Rate a few books from your profile "
-                "or browse the catalog — suggestions will improve as you rate more titles."
+                "The book catalog is empty. Run `python scripts/load_db.py` to load books, "
+                "then try again."
             )
-        n = self.cf.ratings.count_for_user(user_id)
-        if n < self.settings.min_cf_ratings_per_user:
-            return (
-                f"User #{user_id} has only {n} rating(s) in the database; "
-                f"at least {self.settings.min_cf_ratings_per_user} are required. "
-                "Try a user from the list below or run "
-                "`python scripts/load_db.py` with a higher `--ratings-limit`."
-            )
-        if not self.cf.engine.is_loaded:
-            return "Collaborative model is not loaded. Check GET /api/v1/health/ready."
         return (
-            "Model ran but returned no catalog matches. Try user #1 or another ID from the "
-            "table below (users sorted by rating count)."
+            "Hybrid scoring ran but no catalog matches were found for the candidate set. "
+            "Try another user or refresh after rating more books."
         )
 
     def similar_books(self, book_id: int, *, limit: int | None = None) -> RecommendationResponse:
         limit = limit or self.settings.default_recommendation_limit
-        pairs = self.content.similar_books(book_id, limit=limit)
-        items = self._to_items(pairs, algorithm="content")
+        if not self.content_engine.is_loaded:
+            self.content_engine.load()
+        book = self.books.get(book_id)
+        if book is None:
+            return RecommendationResponse(seed_book_id=book_id, algorithm="content", items=[])
+
+        raw = self.content_engine.similar_books(book.source_book_id, limit=limit)
+        pairs: list[tuple[int, float]] = []
+        for source_id, score in raw:
+            match = self.books.get_by_source_id(source_id)
+            if match:
+                pairs.append((match.id, score))
+
+        scored = [
+            ScoredCandidate(
+                book_id=bid,
+                source_book_id="",
+                final_score=score,
+                content=score,
+            )
+            for bid, score in pairs
+        ]
+        items = self._to_items(scored, algorithm="content")
         return RecommendationResponse(seed_book_id=book_id, algorithm="content", items=items)
 
-    def _to_items(self, pairs: list[tuple[int, float]], *, algorithm: str) -> list[RecommendationItem]:
+    def _to_items(self, scored: list[ScoredCandidate], *, algorithm: str) -> list[RecommendationItem]:
         items: list[RecommendationItem] = []
-        for rank, (book_id, score) in enumerate(pairs, start=1):
-            book = self.books.get_with_enrichment(book_id)
+        for rank, row in enumerate(scored, start=1):
+            book = self.books.get_with_enrichment(row.book_id)
             if book is None:
                 continue
             items.append(
                 RecommendationItem(
                     book=BookRead.model_validate(book),
-                    score=score,
+                    score=row.final_score,
                     algorithm=algorithm,
                     rank=rank,
+                    score_breakdown=ScoreBreakdown(
+                        cf=row.cf,
+                        content=row.content,
+                        cluster=row.cluster,
+                        popularity=row.pop,
+                        genre=row.genre,
+                    ),
                 )
             )
         return items

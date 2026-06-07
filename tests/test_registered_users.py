@@ -16,14 +16,20 @@ def _seed_books(db: Session) -> tuple[int, int]:
             match_key="test book 1",
             title="Test Book One",
             author="Test Author",
+            genre="Fantasy",
             avg_rating=4.2,
+            rating_count=100,
+            db_avg_rating=4.2,
         ),
         Book(
             source_book_id="test-book-2",
             match_key="test book 2",
             title="Test Book Two",
             author="Test Author",
+            genre="Fantasy, Adventure",
             avg_rating=4.5,
+            rating_count=80,
+            db_avg_rating=4.5,
         ),
     ]
     db.add_all(books)
@@ -76,4 +82,6 @@ def test_rate_and_recommend(client: TestClient) -> None:
     assert recs.status_code == 200
     payload = recs.json()
     assert payload["items"]
-    assert payload["algorithm"] in {"cold_start", "content_profile", "content_fallback"}
+    assert payload["algorithm"] == "hybrid"
+    assert payload.get("profile") is not None
+    assert payload["profile"]["rating_count"] >= 1

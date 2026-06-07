@@ -5,6 +5,21 @@
   {% endif %}
   <span class="text-muted small">{{ result.items | length }} item{{ "s" if result.items | length != 1 else "" }}</span>
 </div>
+{% if result.profile %}
+<div class="alert alert-light border small mb-3 py-2">
+  <div class="fw-semibold mb-1">User profile</div>
+  <div class="d-flex flex-wrap gap-2">
+    <span class="badge text-bg-secondary">ratings: {{ result.profile.rating_count }}</span>
+    <span class="badge text-bg-secondary">strength: {{ "%.0f"|format(result.profile.profile_strength * 100) }}%</span>
+  </div>
+  {% if result.profile.cluster_label %}
+  <div class="mt-1 text-muted">{{ result.profile.cluster_label }} (cluster {{ result.profile.cluster_id }})</div>
+  {% endif %}
+  {% if result.profile.top_genres %}
+  <div class="mt-1 text-muted">Top genres: {{ result.profile.top_genres | join(", ") }}</div>
+  {% endif %}
+</div>
+{% endif %}
 {% with items=result.items %}
 {% include "partials/_recommendation_table.html" %}
 {% endwith %}

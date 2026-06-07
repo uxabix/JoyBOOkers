@@ -52,7 +52,9 @@ class Settings(BaseSettings):
     default_recommendation_limit: int = 10
     min_cf_ratings_per_user: int = 3
     cf_candidate_limit: int = 2000
+    hybrid_candidate_limit: int = 2500
     cold_start_book_count: int = 15
+    cluster_affinity_path: Path = PROC_FEATURES / "clustering" / "cluster_affinity.json"
 
     session_secret: str = "joybookers-dev-secret-change-in-production"
     session_max_age: int = 60 * 60 * 24 * 30

@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.config import Settings, get_settings
 from app.db.session import get_db
+from app.ml.cluster_affinity import ClusterAffinityStore
 from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
 from app.ml.registry import MLModelRegistry
@@ -57,6 +58,13 @@ def get_clustering_engine(request: Request) -> UserClusteringEngine:
     if not registry.clustering_engine.is_loaded:
         registry.clustering_engine.load()
     return registry.clustering_engine
+
+
+def get_cluster_affinity_store(request: Request) -> ClusterAffinityStore:
+    registry = _ensure_ml_loaded(request)
+    if not registry.cluster_affinity.is_loaded:
+        registry.cluster_affinity.load()
+    return registry.cluster_affinity
 
 
 def get_book_service(db: Session = Depends(get_db)) -> BookService:
@@ -116,11 +124,21 @@ def get_cold_start_service(
 def get_recommendation_service(
     db: Session = Depends(get_db),
     cf_service: CollaborativeFilteringService = Depends(get_cf_service),
-    content_service: ContentRecommendationService = Depends(get_content_service),
-    cold_start_service: ColdStartService = Depends(get_cold_start_service),
+    cf_engine: CollaborativeFilteringEngine = Depends(get_cf_engine),
+    content_engine: ContentRecommendationEngine = Depends(get_content_engine),
+    clustering_engine: UserClusteringEngine = Depends(get_clustering_engine),
+    cluster_affinity: ClusterAffinityStore = Depends(get_cluster_affinity_store),
     settings: Settings = Depends(get_settings_dep),
 ) -> RecommendationService:
-    return RecommendationService(db, cf_service, content_service, cold_start_service, settings)
+    return RecommendationService(
+        db,
+        cf_service,
+        cf_engine,
+        content_engine,
+        clustering_engine,
+        cluster_affinity,
+        settings,
+    )
 
 
 def get_sentiment_service(
