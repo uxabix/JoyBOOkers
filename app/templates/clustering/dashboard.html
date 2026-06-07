@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Clustering dashboard — {{ app_name }}{% endblock %}
+{% block title %}Klasteryzacja — {{ app_name }}{% endblock %}
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 {% endblock %}
 {% block content %}
-{% set title = "User clustering dashboard" %}
-{% set subtitle = "K-Means segments from DS1 rating behavior (≥3 ratings per user)" %}
+{% set title = "Panel klasteryzacji użytkowników" %}
+{% set subtitle = "Segmentacja K-Means na podstawie zachowania ocen (DS1, ≥3 oceny)" %}
 {% set badge = "K = " ~ (clustering.n_clusters if clustering and clustering.n_clusters else "?") %}
 {% include "partials/_page_header.html" %}
 
@@ -34,6 +34,8 @@
   Reports not found. Run <code>python scripts/export_reports.py</code> after the ML pipeline.
 </div>
 {% endif %}
+
+{% include "clustering/_predict_form.html" %}
 
 <div class="row g-3 mb-4">
   <div class="col-md-3 col-6">
@@ -71,6 +73,39 @@
 </div>
 
 <div class="row g-4 mb-4">
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white fw-semibold">
+        Wizualizacja PCA (2D)
+        {% if cluster_visualizations and cluster_visualizations.pca_scatter %}
+        <span class="text-muted fw-normal small ms-1">
+          — {{ cluster_visualizations.pca_scatter.n_points }} / {{ cluster_visualizations.pca_scatter.n_total }} użytk.
+        </span>
+        {% endif %}
+      </div>
+      <div class="card-body chart-placeholder chart-placeholder-tall">
+        <canvas id="chart-pca-scatter" aria-label="PCA scatter plot of user clusters"></canvas>
+      </div>
+      <div class="card-footer bg-white small text-muted">
+        Projekcja 7 cech zachowania (standaryzowanych) na 2 składowe główne. Kolory = klastry K-Means.
+        <span class="d-inline-block ms-1">★ złota gwiazda = zalogowany użytkownik, ▲ czerwony trójkąt = symulacja z formularza.</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white fw-semibold">Aktywność — liczba ocen na użytkownika</div>
+      <div class="card-body chart-placeholder chart-placeholder-tall">
+        <canvas id="chart-n-ratings-hist" aria-label="Histogram liczby ocen per klaster"></canvas>
+      </div>
+      <div class="card-footer bg-white small text-muted">
+        Ile użytkowników w każdym klastrze wystawiło 3–5, 6–10, 11–20… ocen.
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
   <div class="col-lg-4">
     <div class="card shadow-sm border-0 h-100">
       <div class="card-header bg-white fw-semibold">Cluster sizes</div>
@@ -96,6 +131,16 @@
     </div>
   </div>
 </div>
+
+{% if cluster_baseline %}
+<div class="alert alert-light border small mb-4">
+  <strong>Profil globalny (baza porównawcza):</strong>
+  średnio {{ "%.1f"|format(cluster_baseline.n_ratings_mean) }} ocen/użytk.,
+  średnia ocena {{ "%.2f"|format(cluster_baseline.mean_rating) }},
+  std {{ "%.3f"|format(cluster_baseline.std_rating) }}.
+  Opisy klastrów generowane automatycznie z metryk i rozkładu gwiazdek.
+</div>
+{% endif %}
 
 {% include "clustering/_profiles.html" %}
 
@@ -138,4 +183,18 @@
 {% block extra_scripts %}
 <script>window.CHART_DATA = {{ chart_data_json | safe }};</script>
 <script src="/static/js/charts.js"></script>
+<script>
+document.body.addEventListener("htmx:afterSwap", function (evt) {
+  if (evt.detail.target.id !== "cluster-predict-result") return;
+  var root = evt.detail.target.querySelector("[data-pca-x]");
+  if (!root || !window.setPcaPreviewHighlight) return;
+  window.setPcaPreviewHighlight({
+    x: parseFloat(root.dataset.pcaX),
+    y: parseFloat(root.dataset.pcaY),
+    label: root.dataset.pcaLabel || "Symulacja",
+    kind: "preview",
+    cluster_id: parseInt(root.dataset.clusterId, 10),
+  });
+});
+</script>
 {% endblock %}

@@ -249,6 +249,14 @@ tr.cluster-row-mine {
   max-height: 320px;
 }
 
+.chart-placeholder-tall {
+  min-height: 340px;
+}
+
+.chart-placeholder-tall canvas {
+  max-height: 400px;
+}
+
 .book-cover-placeholder {
   width: 100%;
   aspect-ratio: 2 / 3;

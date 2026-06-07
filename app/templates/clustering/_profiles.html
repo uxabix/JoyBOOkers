@@ -1,47 +1,94 @@
 {% set profiles = clustering.cluster_profiles_mean if clustering else {} %}
+{% set detail = profiles_detail if profiles_detail else {} %}
 {% set sizes = train.cluster_sizes if train else {} %}
+{% set descriptions = cluster_descriptions if cluster_descriptions else {} %}
 
-<div class="card shadow-sm border-0">
-  <div class="card-header bg-white fw-semibold">Cluster profiles</div>
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header bg-white fw-semibold">Profile klastrów (metryki z DS1)</div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light">
         <tr>
-          <th>Cluster</th>
-          <th class="text-end">Users</th>
-          <th class="text-end">Avg. ratings count</th>
-          <th class="text-end">Avg. rating</th>
-          <th class="text-end">Avg. std</th>
-          <th>Profile</th>
+          <th>Klaster</th>
+          <th class="text-end">Użytk.</th>
+          <th class="text-end">Śr. liczba ocen</th>
+          <th class="text-end">Mediana ocen</th>
+          <th class="text-end">Śr. ocena</th>
+          <th class="text-end">Śr. std</th>
+          <th class="text-end">4–5★</th>
+          <th class="text-end">1–2★</th>
+          <th>Opis (z metryk)</th>
         </tr>
       </thead>
       <tbody>
         {% if profiles.n_ratings %}
         {% for cid, _ in profiles.n_ratings.items()|sort %}
         {% set cid_int = cid | int %}
+        {% set d = detail[cid] if detail and cid in detail else detail[cid|string] if detail else {} %}
         {% set is_mine = my_cluster_id is not none and cid_int == my_cluster_id %}
         <tr class="{% if is_mine %}cluster-row-mine table-warning{% endif %}">
           <td>
-            <span class="cluster-badge cluster-badge-{{ cid_int }}">Cluster {{ cid }}</span>
+            <span class="cluster-badge cluster-badge-{{ cid_int }}">Klaster {{ cid }}</span>
             {% if is_mine %}
-            <span class="badge text-bg-dark ms-1">You are here</span>
+            <span class="badge text-bg-dark ms-1">Twój klaster</span>
+            {% endif %}
+            {% if d.share_of_users_pct is defined %}
+            <div class="small text-muted">{{ "%.1f"|format(d.share_of_users_pct) }}% próby</div>
             {% endif %}
           </td>
-          <td class="text-end">{{ sizes[cid] if sizes else "—" }}</td>
-          <td class="text-end">{{ "%.1f"|format(profiles.n_ratings[cid]) }}</td>
+          <td class="text-end">{{ sizes[cid] if sizes else d.n_users or "—" }}</td>
+          <td class="text-end">{{ "%.1f"|format(d.n_ratings_mean if d.n_ratings_mean is defined else profiles.n_ratings[cid]) }}</td>
+          <td class="text-end">{{ "%.0f"|format(d.n_ratings_median) if d.n_ratings_median is defined else "—" }}</td>
           <td class="text-end">{{ "%.2f"|format(profiles.mean_rating[cid]) if profiles.mean_rating else "—" }}</td>
           <td class="text-end">{{ "%.3f"|format(profiles.std_rating[cid]) if profiles.std_rating else "—" }}</td>
-          <td class="small {% if is_mine %}fw-semibold{% else %}text-muted{% endif %}">
-            {{ cluster_labels[cid_int] if cluster_labels and cid_int in cluster_labels else "—" }}
+          <td class="text-end">{% if d.generous_share_pct is defined %}{{ "%.0f"|format(d.generous_share_pct) }}%{% else %}—{% endif %}</td>
+          <td class="text-end">{% if d.critical_share_pct is defined %}{{ "%.0f"|format(d.critical_share_pct) }}%{% else %}—{% endif %}</td>
+          <td class="small {% if is_mine %}fw-semibold{% else %}text-muted{% endif %}" style="min-width:220px">
+            {% if descriptions[cid] %}
+            <div class="fw-medium text-dark">{{ descriptions[cid].title }}</div>
+            <div>{{ descriptions[cid].description }}</div>
+            {% elif cluster_labels and cid_int in cluster_labels %}
+            {{ cluster_labels[cid_int] }}
+            {% else %}
+            —
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
         {% else %}
         <tr>
-          <td colspan="6" class="text-muted text-center py-4">Load clustering reports to see profiles.</td>
+          <td colspan="9" class="text-muted text-center py-4">Uruchom pipeline ML i <code>export_reports.py</code>.</td>
         </tr>
         {% endif %}
       </tbody>
     </table>
   </div>
 </div>
+
+{% if detail %}
+<div class="row g-4 mb-4">
+  {% for cid, _ in profiles.n_ratings.items()|sort %}
+  {% set cid_int = cid | int %}
+  {% set d = detail[cid] if cid in detail else detail[cid|string] %}
+  {% if d and d.rating_distribution_pct %}
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0 h-100 {% if my_cluster_id is not none and cid_int == my_cluster_id %}border-warning{% endif %}">
+      <div class="card-header bg-white fw-semibold py-2">
+        Rozkład ocen — klaster {{ cid }}
+      </div>
+      <div class="card-body chart-placeholder" style="min-height:200px">
+        <canvas id="chart-rating-dist-{{ cid }}" aria-label="Rozkład ocen klaster {{ cid }}"></canvas>
+      </div>
+      <div class="card-footer bg-white small text-muted py-2">
+        {% if d.activity_mix %}
+        Aktywność: niska {{ (d.activity_mix.low * 100)|round(0) }}%,
+        średnia {{ (d.activity_mix.medium * 100)|round(0) }}%,
+        wysoka {{ (d.activity_mix.high * 100)|round(0) }}%
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endif %}

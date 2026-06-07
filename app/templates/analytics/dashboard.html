@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Analytics dashboard — {{ app_name }}{% endblock %}
+{% block title %}Analityka — {{ app_name }}{% endblock %}
 {% block extra_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 {% endblock %}
 {% block content %}
-{% set title = "Analytics dashboard" %}
-{% set subtitle = "Pipeline metrics from version-controlled reports/ JSON artifacts" %}
+{% set title = "Panel analityczny" %}
+{% set subtitle = "Metryki pipeline, selekcja cech, wartości odstające i wykresy EDA" %}
 {% set badge = (manifest.n_files|string ~ " files") if manifest and manifest.get("n_files") else "reports" %}
 {% include "partials/_page_header.html" %}
 
@@ -17,6 +17,9 @@
 {% endif %}
 
 {% include "analytics/_metric_cards.html" %}
+
+{% include "analytics/_feature_selection.html" %}
+{% include "analytics/_outliers.html" %}
 
 <div class="row g-4 mb-4">
   <div class="col-lg-6">
@@ -49,6 +52,10 @@
           <tbody>
             <tr><th class="ps-3" style="width:40%">Test RMSE</th><td>{{ "%.4f"|format(metrics.cf_rmse) if metrics.cf_rmse else "—" }}</td></tr>
             <tr><th class="ps-3">Test MAE</th><td>{{ "%.4f"|format(metrics.cf_mae) if metrics.cf_mae else "—" }}</td></tr>
+            <tr><th class="ps-3">Precision@{{ metrics.cf_ranking_k|int if metrics.cf_ranking_k else 10 }}</th>
+              <td>{% if metrics.cf_precision_at_k is not none %}{{ "%.2f"|format(metrics.cf_precision_at_k * 100) }}%{% else %}—{% endif %}</td></tr>
+            <tr><th class="ps-3">Recall@{{ metrics.cf_ranking_k|int if metrics.cf_ranking_k else 10 }}</th>
+              <td>{% if metrics.cf_recall_at_k is not none %}{{ "%.2f"|format(metrics.cf_recall_at_k * 100) }}%{% else %}—{% endif %}</td></tr>
             <tr><th class="ps-3">Interactions</th><td>{{ metrics.interactions or "—" }}</td></tr>
           </tbody>
         </table>
@@ -97,11 +104,30 @@
       </div>
     </div>
   </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white fw-semibold">Hybrid Ridge (regresja wag)</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><th class="ps-3" style="width:40%">Test RMSE</th><td>{{ "%.4f"|format(metrics.hybrid_rmse) if metrics.hybrid_rmse else "—" }}</td></tr>
+            <tr><th class="ps-3">Test MAE</th><td>{{ "%.4f"|format(metrics.hybrid_mae) if metrics.hybrid_mae else "—" }}</td></tr>
+            <tr><th class="ps-3">Źródło</th><td class="small">Ridge na sygnałach CF/content/cluster/pop/genre</td></tr>
+          </tbody>
+        </table>
+      </div>
+      {% if not metrics.hybrid_rmse %}
+      <div class="card-footer bg-white small text-muted">
+        Uruchom <code>train_hybrid_weights.py</code> i <code>evaluate_hybrid_baselines.py</code>, potem <code>export_reports.py</code>.
+      </div>
+      {% endif %}
+    </div>
+  </div>
 </div>
 
 {% if eda_images %}
 <div class="card shadow-sm border-0 mb-4">
-  <div class="card-header bg-white fw-semibold">DS1 exploratory plots (EDA)</div>
+      <div class="card-header bg-white fw-semibold">Wykresy eksploracyjne DS1 (EDA)</div>
   <div class="card-body">
     <div class="row g-3">
       {% for img in eda_images %}

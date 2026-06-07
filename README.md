@@ -12,10 +12,29 @@ University project: collaborative filtering, content-based recommendations, sent
 
 ## Quick start
 
+Full setup (data → ML → hybrid artifacts → reports → SQLite):
+
 ```powershell
 pip install -r requirements.txt
+python scripts/setup_all.py
+uvicorn app.main:app --reload
+```
+
+Skip stages when artifacts already exist:
+
+```powershell
+python scripts/setup_all.py --skip-data --skip-ml
+```
+
+Manual steps (equivalent to `setup_all.py`):
+
+```powershell
 python scripts/run_data_pipeline.py --stages all
 python scripts/ml/run_ml_pipeline.py --stages all
+python scripts/build_cluster_affinity.py
+python scripts/build_genre_priors.py
+python scripts/train_hybrid_weights.py
+python scripts/evaluate_hybrid_baselines.py
 python scripts/export_reports.py
 python scripts/load_db.py --books-limit 20000 --ratings-limit 50000
 uvicorn app.main:app --reload

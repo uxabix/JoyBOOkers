@@ -40,6 +40,7 @@ _REPORT_GLOBS: list[tuple[Path, str]] = [
     (MODEL_SENTIMENT_DIR, "ml/sentiment"),
     (MODEL_CLUSTERING_DIR, "ml/clustering"),
     (MODEL_EVAL_DIR, "ml/evaluation"),
+    (MODEL_EVAL_DIR / "hybrid", "ml/evaluation/hybrid"),
     (EDA_DIR, "eda"),
 ]
 

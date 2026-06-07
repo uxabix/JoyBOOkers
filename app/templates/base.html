@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,31 +23,31 @@
       <div class="collapse navbar-collapse" id="mainNav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link{% if request.url.path == '/' %} active{% endif %}" href="/">Home</a>
+            <a class="nav-link{% if request.url.path == '/' %} active{% endif %}" href="/">Strona główna</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link{% if request.url.path.startswith('/books') and request.url.path != '/books/similar' %} active{% endif %}" href="/books">Books</a>
+            <a class="nav-link{% if request.url.path.startswith('/books') and request.url.path != '/books/similar' %} active{% endif %}" href="/books">Książki</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link{% if request.url.path.startswith('/authors') %} active{% endif %}" href="/authors">Authors</a>
+            <a class="nav-link{% if request.url.path.startswith('/authors') %} active{% endif %}" href="/authors">Autorzy</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link{% if request.url.path == '/books/similar' %} active{% endif %}" href="/books/similar">Similar</a>
+            <a class="nav-link{% if request.url.path == '/books/similar' %} active{% endif %}" href="/books/similar">Podobne</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link{% if request.url.path.startswith('/users') %} active{% endif %}" href="/users">Users</a>
+            <a class="nav-link{% if request.url.path.startswith('/users') %} active{% endif %}" href="/users">Użytkownicy</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link{% if request.url.path.startswith('/recommendations') %} active{% endif %}" href="/recommendations">Recommendations</a>
+            <a class="nav-link{% if request.url.path.startswith('/recommendations') %} active{% endif %}" href="/recommendations">Rekomendacje</a>
           </li>
           <li class="nav-item">
             <a class="nav-link{% if request.url.path.startswith('/sentiment') %} active{% endif %}" href="/sentiment">Sentiment</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link{% if request.url.path.startswith('/clustering') %} active{% endif %}" href="/clustering">Clustering</a>
+            <a class="nav-link{% if request.url.path.startswith('/clustering') %} active{% endif %}" href="/clustering">Klasteryzacja</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link{% if request.url.path.startswith('/analytics') %} active{% endif %}" href="/analytics">Analytics</a>
+            <a class="nav-link{% if request.url.path.startswith('/analytics') %} active{% endif %}" href="/analytics">Analityka</a>
           </li>
         </ul>
         <ul class="navbar-nav align-items-lg-center gap-lg-1">

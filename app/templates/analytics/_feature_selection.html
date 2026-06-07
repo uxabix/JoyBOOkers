@@ -1,0 +1,36 @@
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header bg-white fw-semibold">
+    <i class="bi bi-funnel me-1"></i>Selekcja cech / atrybutów
+  </div>
+  <div class="card-body p-0">
+  {% if feature_selection_rows %}
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Moduł</th>
+            <th>Wybrane cechy</th>
+            <th>Ograniczenia</th>
+            <th>Uzasadnienie</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in feature_selection_rows %}
+          <tr>
+            <td class="ps-3 fw-medium">{{ row.module }}</td>
+            <td class="small">{{ row.selected }}</td>
+            <td class="small text-muted">{{ row.limit }}</td>
+            <td class="small">{{ row.note }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white small text-muted">
+      Źródło: <code>train_all.json</code>, <code>features_summary.json</code>, <code>bookrec/constraints.py</code>.
+    </div>
+  {% else %}
+    <div class="card-body text-muted">Brak raportów selekcji cech.</div>
+  {% endif %}
+  </div>
+</div>

@@ -1,0 +1,42 @@
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header bg-white fw-semibold">
+    <i class="bi bi-exclamation-diamond me-1"></i>Wartości odstające (identyfikacja)
+  </div>
+  <div class="card-body p-0">
+  {% set io = outlier_summary.interactions if outlier_summary else {} %}
+  {% set co = outlier_summary.catalog_numeric if outlier_summary else {} %}
+  {% if io or co %}
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-3">Obszar</th>
+            <th>Wskaźnik</th>
+            <th>Liczba / wartość</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if io %}
+          <tr><th class="ps-3" rowspan="6">DS1 interakcje</th><td>Użytkownicy z 1 oceną</td><td>{{ io.users_with_1_rating or "—" }}</td></tr>
+          <tr><td>Książki z 1 oceną (cold start)</td><td>{{ io.books_with_1_rating or "—" }}</td></tr>
+          <tr><td>Max ocen na użytkownika</td><td>{{ io.max_ratings_per_user or "—" }}</td></tr>
+          <tr><td>Max ocen na książkę</td><td>{{ io.max_ratings_per_book or "—" }}</td></tr>
+          <tr><td>Oceny &lt; 1</td><td>{{ (io.rating_outliers or {}).get("below_1", "—") }}</td></tr>
+          <tr><td>Oceny &gt; 5</td><td>{{ (io.rating_outliers or {}).get("above_5", "—") }}</td></tr>
+          {% endif %}
+          {% if co.publishyear %}
+          <tr><th class="ps-3" rowspan="2">DS1 katalog</th><td>Rok wydania poza [1000, 2030]</td><td>{{ co.publishyear.outlier_count }}</td></tr>
+          <tr><td>Strony poza [1, 10 000]</td><td>{{ co.pagesnumber.outlier_count }}</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white small text-muted">
+      Źródło: <code>reports/data_pipeline/preprocess_summary.json</code>,
+      <code>analyze_all.json</code> — progi domenowe i wzorce power-userów.
+    </div>
+  {% else %}
+    <div class="card-body text-muted">Brak raportów outlierów. Uruchom pipeline danych i <code>export_reports.py</code>.</div>
+  {% endif %}
+  </div>
+</div>

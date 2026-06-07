@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.config import Settings, get_settings
 from app.db.session import get_db
 from app.ml.cluster_affinity import ClusterAffinityStore
+from app.ml.cluster_pca import ClusterPcaProjector
 from app.ml.genre_priors import GenrePriorStore
 from app.ml.hybrid_weights import HybridWeightModel
 from app.ml.collaborative import CollaborativeFilteringEngine
@@ -60,6 +61,13 @@ def get_clustering_engine(request: Request) -> UserClusteringEngine:
     if not registry.clustering_engine.is_loaded:
         registry.clustering_engine.load()
     return registry.clustering_engine
+
+
+def get_cluster_pca_projector(request: Request) -> ClusterPcaProjector:
+    registry = _ensure_ml_loaded(request)
+    if not registry.cluster_pca.is_loaded:
+        registry.cluster_pca.load()
+    return registry.cluster_pca
 
 
 def get_cluster_affinity_store(request: Request) -> ClusterAffinityStore:

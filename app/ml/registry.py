@@ -9,6 +9,7 @@ from typing import Any
 from app.config import Settings
 from app.logging_config import get_logger
 from app.ml.cluster_affinity import ClusterAffinityStore
+from app.ml.cluster_pca import ClusterPcaProjector
 from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
 from app.ml.genre_priors import GenrePriorStore
@@ -34,6 +35,7 @@ class MLModelRegistry:
     content_engine: ContentRecommendationEngine = field(init=False)
     sentiment_engine: SentimentEngine = field(init=False)
     clustering_engine: UserClusteringEngine = field(init=False)
+    cluster_pca: ClusterPcaProjector = field(init=False)
     cluster_affinity: ClusterAffinityStore = field(init=False)
     genre_priors: GenrePriorStore = field(init=False)
     hybrid_weights: HybridWeightModel = field(init=False)
@@ -52,7 +54,9 @@ class MLModelRegistry:
             self.settings.clustering_model_path,
             self.settings.clustering_features_dir,
             self.settings.clustering_report_path,
+            eval_report_path=self.settings.clustering_eval_path,
         )
+        self.cluster_pca = ClusterPcaProjector(self.settings.clustering_pca_path)
         self.cluster_affinity = ClusterAffinityStore(self.settings.cluster_affinity_path)
         self.genre_priors = GenrePriorStore(self.settings.genre_priors_path)
         self.hybrid_weights = HybridWeightModel(self.settings.hybrid_weights_path)
@@ -68,6 +72,7 @@ class MLModelRegistry:
             ModelStatus("content_tfidf", str(self._content_matrix_path()), False, "lazy load"),
             ModelStatus("sentiment", str(self.settings.sentiment_model_path), False, "lazy load"),
             self._load_one("clustering", self.settings.clustering_model_path, self.clustering_engine.load),
+            self._load_one("cluster_pca", self.settings.clustering_pca_path, self.cluster_pca.load),
             self._load_one("cluster_affinity", self.settings.cluster_affinity_path, self.cluster_affinity.load),
             self._load_one("genre_priors", self.settings.genre_priors_path, self.genre_priors.load),
             self._load_one("hybrid_weights", self.settings.hybrid_weights_path, self.hybrid_weights.load),
@@ -83,6 +88,7 @@ class MLModelRegistry:
             self._load_one("content_tfidf", self._content_matrix_path(), self.content_engine.load),
             self._load_one("sentiment", self.settings.sentiment_model_path, self.sentiment_engine.load),
             self._load_one("clustering", self.settings.clustering_model_path, self.clustering_engine.load),
+            self._load_one("cluster_pca", self.settings.clustering_pca_path, self.cluster_pca.load),
             self._load_one("cluster_affinity", self.settings.cluster_affinity_path, self.cluster_affinity.load),
             self._load_one("genre_priors", self.settings.genre_priors_path, self.genre_priors.load),
             self._load_one("hybrid_weights", self.settings.hybrid_weights_path, self.hybrid_weights.load),

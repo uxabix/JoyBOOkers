@@ -13,6 +13,7 @@ from bookrec.paths import (
     MODEL_CF_DIR,
     MODEL_CLUSTERING_DIR,
     MODEL_CONTENT_DIR,
+    MODEL_EVAL_DIR,
     MODEL_SENTIMENT_DIR,
     PROC_MODELS,
     PROC_FEATURES,
@@ -66,6 +67,8 @@ class Settings(BaseSettings):
     db_batch_size: int = 1000
     clustering_features_dir: Path = PROC_FEATURES / "clustering"
     clustering_report_path: Path = PROJECT_ROOT / "reports" / "features" / "clustering" / "clustering_features_report.json"
+    clustering_eval_path: Path = MODEL_EVAL_DIR / "clustering" / "evaluate_report.json"
+    clustering_pca_path: Path = MODEL_CLUSTERING_DIR / "pca_viz.joblib"
 
     templates_dir: Path = Path(__file__).resolve().parent / "templates"
     static_dir: Path = Path(__file__).resolve().parent / "static"

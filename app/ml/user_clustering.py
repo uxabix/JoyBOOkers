@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -24,11 +25,15 @@ FEATURE_COLS = [
     "activity_high",
 ]
 
-CLUSTER_LABELS = {
-    0: "Power users — high activity",
-    1: "Lenient occasional raters",
-    2: "Moderate activity",
+# Fallback when evaluate_report.json is missing (dev / tests).
+_DEFAULT_LABELS = {
+    0: "Aktywni czytelnicy",
+    1: "Okazjonalni oceniający",
+    2: "Umiarkowana aktywność",
 }
+
+# Backward-compatible alias (prefer data-driven titles from evaluate_report.json).
+CLUSTER_LABELS = _DEFAULT_LABELS
 
 
 class UserClusteringEngine:
@@ -37,16 +42,21 @@ class UserClusteringEngine:
         model_path: Path,
         features_dir: Path,
         report_path: Path,
+        *,
+        eval_report_path: Path | None = None,
     ) -> None:
         self.model_path = model_path
         self.features_dir = features_dir
         self.report_path = report_path
+        self.eval_report_path = eval_report_path
         self._model = None
         self._feature_cols: list[str] = list(FEATURE_COLS)
         self._mu: np.ndarray | None = None
         self._sigma: np.ndarray | None = None
         self._q33 = 8.0
         self._q66 = 39.0
+        self._cluster_titles: dict[int, str] = dict(_DEFAULT_LABELS)
+        self._cluster_descriptions: dict[int, str] = {}
 
     @property
     def is_loaded(self) -> bool:
@@ -64,8 +74,41 @@ class UserClusteringEngine:
             self._model = raw
         self._load_scaler_stats()
         self._load_quantiles()
+        self._load_cluster_descriptions()
         logger.info("Loaded user clustering model from %s", self.model_path)
         return True
+
+    def _load_cluster_descriptions(self) -> None:
+        for path in (
+            self.eval_report_path,
+            self.report_path.parent.parent / "ml" / "evaluation" / "clustering" / "evaluate_report.json",
+        ):
+            if not path or not Path(path).is_file():
+                continue
+            try:
+                with Path(path).open(encoding="utf-8") as fh:
+                    report = json.load(fh)
+            except (json.JSONDecodeError, OSError):
+                continue
+            desc = report.get("cluster_descriptions") or {}
+            detail = report.get("cluster_profiles_detail") or {}
+            titles: dict[int, str] = {}
+            descriptions: dict[int, str] = {}
+            for cid_str, payload in desc.items():
+                cid = int(cid_str)
+                titles[cid] = str(payload.get("title", _DEFAULT_LABELS.get(cid, f"Klaster {cid}")))
+                descriptions[cid] = str(payload.get("description", ""))
+            for cid_str, payload in detail.items():
+                cid = int(cid_str)
+                if cid not in titles and payload.get("title"):
+                    titles[cid] = str(payload["title"])
+                if cid not in descriptions and payload.get("description"):
+                    descriptions[cid] = str(payload["description"])
+            if titles:
+                self._cluster_titles = titles
+            if descriptions:
+                self._cluster_descriptions = descriptions
+            return
 
     def _load_scaler_stats(self) -> None:
         raw_path = self.features_dir / "user_features.parquet"
@@ -130,4 +173,19 @@ class UserClusteringEngine:
     def cluster_label(self, cluster_id: int | None) -> str | None:
         if cluster_id is None:
             return None
-        return CLUSTER_LABELS.get(cluster_id, f"Cluster {cluster_id}")
+        return self._cluster_titles.get(cluster_id, f"Klaster {cluster_id}")
+
+    def cluster_description(self, cluster_id: int | None) -> str | None:
+        if cluster_id is None:
+            return None
+        return self._cluster_descriptions.get(cluster_id)
+
+    def all_cluster_labels(self) -> dict[int, str]:
+        return dict(self._cluster_titles)
+
+    def all_cluster_profiles(self) -> dict[int, dict[str, Any]]:
+        """Profiles loaded at runtime are titles/descriptions only; full detail comes from reports."""
+        return {
+            cid: {"title": title, "description": self._cluster_descriptions.get(cid, "")}
+            for cid, title in self._cluster_titles.items()
+        }

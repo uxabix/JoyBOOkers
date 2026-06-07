@@ -37,3 +37,26 @@ def test_analytics_page(client: TestClient) -> None:
 def test_clustering_page(client: TestClient) -> None:
     response = client.get("/clustering")
     assert response.status_code == 200
+    assert "Przypisanie nowego profilu" in response.text
+
+
+def test_clustering_predict(client: TestClient) -> None:
+    response = client.post(
+        "/clustering/predict",
+        data={"rating_1": 5, "rating_2": 5, "rating_3": 4, "rating_4": 5, "rating_5": 5},
+    )
+    assert response.status_code == 200
+    assert "Cluster" in response.text or "klaster" in response.text.lower()
+
+
+def test_clustering_predict_invalid(client: TestClient) -> None:
+    response = client.post("/clustering/predict", data={"rating_1": 9})
+    assert response.status_code == 200
+    assert "1–5" in response.text or "1-5" in response.text
+
+
+def test_analytics_rubric_sections(client: TestClient) -> None:
+    response = client.get("/analytics")
+    assert response.status_code == 200
+    assert "Selekcja cech" in response.text
+    assert "Wartości odstające" in response.text
