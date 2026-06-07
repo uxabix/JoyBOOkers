@@ -1,0 +1,26 @@
+<div class="col">
+  <div class="card h-100 shadow-sm border-0">
+    {% if book.image_url %}
+    <img src="{{ book.image_url }}" class="card-img-top" alt="{{ book.title }}" loading="lazy">
+    {% else %}
+    <div class="book-cover-placeholder m-2">No cover</div>
+    {% endif %}
+    <div class="card-body d-flex flex-column">
+      <h5 class="card-title fs-6">
+        <a href="/books/{{ book.id }}" class="text-decoration-none stretched-link">{{ book.title }}</a>
+      </h5>
+      <p class="card-subtitle text-muted small mb-2">{{ book.author or "Unknown author" }}</p>
+      {% if book.genre %}
+      <p class="card-text small text-truncate text-secondary mb-2" title="{{ book.genre }}">{{ book.genre }}</p>
+      {% endif %}
+      <div class="mt-auto">
+        {% if book.avg_rating %}
+        <span class="badge text-bg-warning">{{ "%.2f"|format(book.avg_rating) }} &#9733;</span>
+        {% endif %}
+        {% if book.pages %}
+        <span class="badge text-bg-light text-dark">{{ book.pages }} pp.</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>

@@ -28,3 +28,6 @@ class UserService:
         self.session.commit()
         self.session.refresh(user)
         return UserRead.model_validate(user)
+
+    def list_recent(self, *, limit: int = 20) -> list[UserRead]:
+        return [UserRead.model_validate(u) for u in self.repo.list_recent(limit=limit)]

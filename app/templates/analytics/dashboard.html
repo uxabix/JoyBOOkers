@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Analytics dashboard — {{ app_name }}{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+{% set title = "Analytics dashboard" %}
+{% set subtitle = "Pipeline metrics from version-controlled reports/ JSON artifacts" %}
+{% set badge = (manifest.n_files|string ~ " files") if manifest and manifest.get("n_files") else "reports" %}
+{% include "partials/_page_header.html" %}
+
+{% if not reports_available %}
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle me-1"></i>
+  No reports directory. Run the data + ML pipelines, then <code>python scripts/export_reports.py</code>.
+</div>
+{% endif %}
+
+{% include "analytics/_metric_cards.html" %}
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white fw-semibold">ML metrics comparison</div>
+      <div class="card-body chart-placeholder">
+        <canvas id="chart-ml-comparison" aria-label="ML metrics bar chart"></canvas>
+      </div>
+      <div class="card-footer bg-white small text-muted">
+        CF RMSE (lower is better); other bars scaled to percentage for display.
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white fw-semibold">Dataset volumes</div>
+      <div class="card-body chart-placeholder">
+        <canvas id="chart-dataset-volumes" aria-label="Dataset row counts"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white fw-semibold">Collaborative filtering (DS1)</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><th class="ps-3" style="width:40%">Test RMSE</th><td>{{ "%.4f"|format(metrics.cf_rmse) if metrics.cf_rmse else "—" }}</td></tr>
+            <tr><th class="ps-3">Test MAE</th><td>{{ "%.4f"|format(metrics.cf_mae) if metrics.cf_mae else "—" }}</td></tr>
+            <tr><th class="ps-3">Interactions</th><td>{{ metrics.interactions or "—" }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white fw-semibold">Content-based (DS2+DS3)</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><th class="ps-3" style="width:40%">Catalog books</th><td>{{ metrics.content_books or metrics.catalog_books or "—" }}</td></tr>
+            <tr><th class="ps-3">Genre overlap @10</th><td>{% if metrics.content_overlap %}{{ "%.1f"|format(metrics.content_overlap * 100) }}%{% else %}—{% endif %}</td></tr>
+            <tr><th class="ps-3">Mean cosine</th><td>{{ "%.3f"|format(metrics.content_cosine) if metrics.content_cosine else "—" }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white fw-semibold">Sentiment (DS4)</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><th class="ps-3" style="width:40%">Test accuracy</th><td>{% if metrics.sentiment_accuracy %}{{ "%.2f"|format(metrics.sentiment_accuracy * 100) }}%{% else %}—{% endif %}</td></tr>
+            <tr><th class="ps-3">F1 macro</th><td>{{ "%.3f"|format(metrics.sentiment_f1) if metrics.sentiment_f1 else "—" }}</td></tr>
+            <tr><th class="ps-3">NLP reviews</th><td>{{ metrics.nlp_reviews or "—" }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white fw-semibold">Clustering (DS1 users)</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><th class="ps-3" style="width:40%">k</th><td>{{ metrics.cluster_k or "—" }}</td></tr>
+            <tr><th class="ps-3">Silhouette</th><td>{{ "%.3f"|format(metrics.cluster_silhouette) if metrics.cluster_silhouette else "—" }}</td></tr>
+            <tr><th class="ps-3">DS3 rows clean</th><td>{{ metrics.ds3_rows or "—" }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if eda_images %}
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-header bg-white fw-semibold">DS1 exploratory plots (EDA)</div>
+  <div class="card-body">
+    <div class="row g-3">
+      {% for img in eda_images %}
+      <div class="col-md-4 col-lg-3">
+        <div class="card border-0 bg-light">
+          <img src="/reports-assets/eda/{{ img }}" class="eda-thumb" alt="{{ img }}" loading="lazy">
+          <div class="card-body py-2">
+            <p class="small text-muted mb-0 text-truncate" title="{{ img }}">{{ img }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card shadow-sm border-0">
+  <div class="card-header bg-white fw-semibold">Exported report files</div>
+  <div class="card-body">
+    {% if manifest.files %}
+    <div class="table-responsive" style="max-height:320px; overflow-y:auto">
+      <table class="table table-sm table-striped mb-0">
+        <thead class="table-light sticky-top">
+          <tr><th>Path under reports/</th></tr>
+        </thead>
+        <tbody>
+          {% for f in manifest.files %}
+          <tr><td class="small font-monospace">{{ f }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">Run <code>export_reports.py</code> to populate manifest.json.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>window.CHART_DATA = {{ chart_data_json | safe }};</script>
+<script src="/static/js/charts.js"></script>
+{% endblock %}

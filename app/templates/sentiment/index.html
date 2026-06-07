@@ -1,11 +1,70 @@
 {% extends "base.html" %}
-{% block title %}Sentiment — {{ app_name }}{% endblock %}
+{% block title %}Sentiment analysis — {{ app_name }}{% endblock %}
 {% block content %}
-<h2 class="mb-3">Review sentiment <span class="badge text-bg-secondary">DS4 independent</span></h2>
-<form hx-post="/sentiment" hx-target="#sentiment-result" class="mb-3">
-  <label class="form-label">Amazon review text</label>
-  <textarea name="text" class="form-control mb-2" rows="5" required placeholder="Paste review text…"></textarea>
-  <button class="btn btn-primary" type="submit">Analyze</button>
-</form>
-<div id="sentiment-result"></div>
+{% set title = "Sentiment analysis" %}
+{% set subtitle = "TF-IDF + logistic regression on Amazon book reviews (DS4)" %}
+{% set badge = "DS4 NLP" %}
+{% include "partials/_page_header.html" %}
+
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white fw-semibold">Review text</div>
+      <div class="card-body">
+        <form hx-post="/sentiment"
+              hx-target="#sentiment-result"
+              hx-indicator="#sentiment-spinner">
+          <div class="mb-3">
+            <label class="form-label" for="review-text">Paste a review</label>
+            <textarea class="form-control" id="review-text" name="text" rows="8" required
+                      placeholder="I loved this book from start to finish..."></textarea>
+          </div>
+          <div class="d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-chat-quote me-1"></i>Analyze
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                    onclick="document.getElementById('review-text').value='A wonderful story with great characters.'">
+              Sample positive
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                    onclick="document.getElementById('review-text').value='Boring and poorly written, waste of time.'">
+              Sample negative
+            </button>
+          </div>
+        </form>
+        <div class="htmx-indicator text-primary pt-3" id="sentiment-spinner">
+          <div class="spinner-border spinner-border-sm me-2" role="status"></div>Classifying&hellip;
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 bg-light mt-3">
+      <div class="card-body small text-muted">
+        <strong>Label mapping:</strong> ratings &le;2&#9733; &rarr; negative, &ge;4&#9733; &rarr; positive.
+        Neutral 3&#9733; reviews are excluded from training.
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0 min-vh-25">
+      <div class="card-header bg-white fw-semibold">Prediction</div>
+      <div class="card-body" id="sentiment-result">
+        <div class="text-muted text-center py-5">
+          <i class="bi bi-chat-left-text display-4 d-block mb-3 opacity-50"></i>
+          Submit review text to see the model prediction.
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-3">
+      <div class="card-header bg-white fw-semibold small">Chart placeholder — class distribution (training)</div>
+      <div class="card-body chart-placeholder">
+        <canvas id="chart-sentiment-placeholder" aria-label="Sentiment class distribution placeholder"></canvas>
+        <p class="text-muted small text-center mt-2 mb-0">See Analytics dashboard for full DS4 metrics.</p>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

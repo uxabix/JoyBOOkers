@@ -2,41 +2,98 @@
 {% block title %}{{ book.title if book else "Book" }} — {{ app_name }}{% endblock %}
 {% block content %}
 {% if not book %}
-<div class="alert alert-warning">Book not found.</div>
+<div class="alert alert-warning">
+  <i class="bi bi-exclamation-triangle me-1"></i> Book not found.
+  <a href="/books" class="alert-link">Back to search</a>
+</div>
 {% else %}
-<div class="row">
-  <div class="col-lg-8">
-    <h2>{{ book.title }}</h2>
-    <p class="text-muted">{{ book.author }}</p>
-    {% if book.description %}
-    <p>{{ book.description }}</p>
-    {% endif %}
-    <dl class="row small">
-      <dt class="col-sm-3">Genre</dt><dd class="col-sm-9">{{ book.genre or "—" }}</dd>
-      <dt class="col-sm-3">Pages</dt><dd class="col-sm-9">{{ book.pages or "—" }}</dd>
-      <dt class="col-sm-3">ISBN</dt><dd class="col-sm-9">{{ book.isbn13 or book.isbn or "—" }}</dd>
-    </dl>
-    {% if book.enrichment %}
-    <h5 class="mt-4">Enrichment (DS3)</h5>
-    <p class="small"><strong>Tags:</strong> {{ book.enrichment.tags or "—" }}</p>
-    <p class="small"><strong>Characters:</strong> {{ book.enrichment.characters or "—" }}</p>
-    {% endif %}
-  </div>
+<nav aria-label="breadcrumb" class="mb-3">
+  <ol class="breadcrumb small">
+    <li class="breadcrumb-item"><a href="/">Home</a></li>
+    <li class="breadcrumb-item"><a href="/books">Books</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ book.title | truncate(48) }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
   <div class="col-lg-4">
-    {% if similar and similar.items %}
-    <div class="card shadow-sm">
-      <div class="card-header">Similar books (content)</div>
-      <ul class="list-group list-group-flush">
-        {% for item in similar.items %}
-        <li class="list-group-item d-flex justify-content-between align-items-center">
-          <a href="/books/{{ item.book.id }}">{{ item.book.title }}</a>
-          <span class="badge text-bg-primary">{{ "%.2f"|format(item.score) }}</span>
-        </li>
-        {% endfor %}
-      </ul>
+    {% if book.image_url %}
+    <img src="{{ book.image_url }}" class="img-fluid rounded shadow-sm w-100" alt="{{ book.title }}">
+    {% else %}
+    <div class="book-cover-placeholder" style="min-height:320px">No cover image</div>
+    {% endif %}
+    <div class="d-grid gap-2 mt-3">
+      <a href="/books/similar?book_id={{ book.id }}" class="btn btn-primary">
+        <i class="bi bi-diagram-3 me-1"></i>Find similar books
+      </a>
+      {% if book.goodreads_url %}
+      <a href="{{ book.goodreads_url }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">
+        View on Goodreads
+      </a>
+      {% endif %}
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <h1 class="h2">{{ book.title }}</h1>
+    <p class="lead text-muted">{{ book.author or "Unknown author" }}</p>
+
+    {% if book.avg_rating %}
+    <span class="badge text-bg-warning fs-6 mb-3">{{ "%.2f"|format(book.avg_rating) }} &#9733; average</span>
+    {% endif %}
+
+    {% if book.description %}
+    <div class="card border-0 bg-white shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h6 text-uppercase text-muted">Description</h2>
+        <p class="mb-0">{{ book.description }}</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">Metadata</div>
+      <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+          <tbody>
+            <tr><th scope="row" class="ps-3" style="width:35%">Genre</th><td>{{ book.genre or "—" }}</td></tr>
+            <tr><th scope="row" class="ps-3">Pages</th><td>{{ book.pages or "—" }}</td></tr>
+            <tr><th scope="row" class="ps-3">ISBN</th><td>{{ book.isbn13 or book.isbn or "—" }}</td></tr>
+            <tr><th scope="row" class="ps-3">Source ID</th><td><code>{{ book.source_book_id }}</code></td></tr>
+            <tr><th scope="row" class="ps-3">Match key</th><td class="small text-muted">{{ book.match_key }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {% if book.enrichment %}
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold">DS3 enrichment</div>
+      <div class="card-body">
+        <p class="small mb-2"><strong>Characters:</strong> {{ book.enrichment.characters or "—" }}</p>
+        <p class="small mb-2"><strong>Tags:</strong> {{ book.enrichment.tags or "—" }}</p>
+        {% if book.enrichment.series %}
+        <p class="small mb-0"><strong>Series:</strong> {{ book.enrichment.series }}</p>
+        {% endif %}
+      </div>
     </div>
     {% endif %}
   </div>
 </div>
+
+{% if similar and similar.items %}
+<div class="mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="h4 mb-0">Similar books</h2>
+    <a href="/books/similar?book_id={{ book.id }}" class="btn btn-sm btn-outline-primary">View all</a>
+  </div>
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+      {% with items=similar.items %}
+      {% include "partials/_recommendation_table.html" %}
+      {% endwith %}
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endif %}
 {% endblock %}

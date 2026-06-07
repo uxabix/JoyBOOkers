@@ -55,6 +55,7 @@ class Settings(BaseSettings):
     # HTMX / templates
     templates_dir: Path = Path(__file__).resolve().parent / "templates"
     static_dir: Path = Path(__file__).resolve().parent / "static"
+    reports_dir: Path = PROJECT_ROOT / "reports"
 
 
 @lru_cache

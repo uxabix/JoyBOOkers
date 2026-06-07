@@ -1,14 +1,24 @@
-<div class="card shadow-sm">
+{% set label_class = "sentiment-neutral" %}
+{% if prediction.label == "positive" %}
+{% set label_class = "sentiment-positive" %}
+{% elif prediction.label == "negative" %}
+{% set label_class = "sentiment-negative" %}
+{% endif %}
+
+<div class="card border-0 shadow-sm {{ label_class }}">
   <div class="card-body">
-    <h5 class="card-title">
-      Label:
-      <span class="badge {% if prediction.label == 'positive' %}text-bg-success{% elif prediction.label == 'negative' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
-        {{ prediction.label }}
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <h3 class="h5 mb-1 text-capitalize">{{ prediction.label }}</h3>
+        <p class="text-muted small mb-0">Model: {{ prediction.model }}</p>
+      </div>
+      {% if prediction.score is not none %}
+      <span class="badge fs-6 {% if prediction.label == 'positive' %}text-bg-success{% elif prediction.label == 'negative' %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
+        {{ "%.1f"|format(prediction.score * 100) }}% confidence
       </span>
-    </h5>
-    <p class="mb-1">Confidence: <strong>{{ "%.2f"|format(prediction.score) }}</strong></p>
-    <p class="small text-muted mb-0">Model: {{ prediction.model }}</p>
-    <hr>
-    <p class="small fst-italic">{{ text }}</p>
+      {% endif %}
+    </div>
+    <h4 class="h6 text-uppercase text-muted">Input excerpt</h4>
+    <p class="small mb-0 fst-italic">"{{ text | truncate(400) }}"</p>
   </div>
 </div>

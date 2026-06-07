@@ -1,22 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Books — {{ app_name }}{% endblock %}
+{% block title %}Book search — {{ app_name }}{% endblock %}
 {% block content %}
-<h2 class="mb-3">Book catalog <span class="badge text-bg-secondary">DS2 + DS3</span></h2>
-<form class="row g-2 mb-4"
-      hx-get="/books"
-      hx-target="#book-results"
-      hx-trigger="keyup changed delay:300ms, submit"
-      hx-push-url="true">
-  <div class="col-md-5">
-    <input type="search" name="q" class="form-control" placeholder="Search title or author" value="{{ q }}">
+{% set title = "Book search" %}
+{% set subtitle = "Content catalog from DS2 (Goodreads 100k) with DS3 enrichment" %}
+{% set badge = "DS2 + DS3" %}
+{% include "partials/_page_header.html" %}
+
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <form class="row g-3"
+          hx-get="/books"
+          hx-target="#book-results"
+          hx-indicator="#book-spinner"
+          hx-trigger="keyup changed delay:400ms from:input, submit"
+          hx-push-url="true">
+      <div class="col-md-5">
+        <label class="form-label" for="search-q">Title or author</label>
+        <input type="search" id="search-q" name="q" class="form-control" placeholder="e.g. Tolkien" value="{{ q }}">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="search-genre">Genre</label>
+        <input type="text" id="search-genre" name="genre" class="form-control" placeholder="e.g. Fantasy" value="{{ genre }}">
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-primary w-100" type="submit">
+          <i class="bi bi-search me-1"></i>Search
+        </button>
+      </div>
+    </form>
   </div>
-  <div class="col-md-4">
-    <input type="text" name="genre" class="form-control" placeholder="Genre filter" value="{{ genre }}">
-  </div>
-  <div class="col-md-3">
-    <button class="btn btn-primary w-100" type="submit">Search</button>
-  </div>
-</form>
+</div>
+
+<div class="htmx-indicator text-primary py-2" id="book-spinner">
+  <div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading&hellip;
+</div>
+
 <div id="book-results">
   {% include "books/_search_results.html" %}
 </div>

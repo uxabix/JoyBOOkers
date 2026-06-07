@@ -1,32 +1,129 @@
 {% extends "base.html" %}
 {% block title %}{{ app_name }} — Home{% endblock %}
 {% block content %}
-<div class="row align-items-center">
-  <div class="col-lg-7">
-    <h1 class="display-5 fw-bold">Book Recommendation System</h1>
-    <p class="lead text-muted">
-      University project combining collaborative filtering, content-based recommendations,
-      and independent sentiment analysis across four Goodreads / Amazon datasets.
-    </p>
-    <div class="d-flex gap-2 flex-wrap">
-      <a class="btn btn-primary" href="/books">Browse catalog (DS2)</a>
-      <a class="btn btn-outline-primary" href="/recommendations">Get recommendations</a>
-      <a class="btn btn-outline-secondary" href="/sentiment">Analyze review sentiment (DS4)</a>
-    </div>
-  </div>
-  <div class="col-lg-5">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title">Dataset roles</h5>
-        <ul class="small mb-0">
-          <li><strong>DS1 (2M)</strong> — ratings &amp; collaborative filtering only</li>
-          <li><strong>DS2 (100k)</strong> — genres, metadata, content vectors</li>
-          <li><strong>DS3 (Best)</strong> — tags &amp; characters enrichment</li>
-          <li><strong>DS4 (Amazon)</strong> — independent sentiment NLP</li>
-        </ul>
+<div class="hero-gradient p-4 p-md-5 mb-4 shadow-sm">
+  <div class="row align-items-center g-4">
+    <div class="col-lg-7">
+      <h1 class="display-5 fw-bold mb-3">Book Recommendation System</h1>
+      <p class="lead mb-4">
+        Collaborative filtering, content-based similarity, user clustering, and Amazon review sentiment
+        across four Goodreads / Amazon datasets.
+      </p>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-light btn-lg" href="/books"><i class="bi bi-search me-1"></i>Browse catalog</a>
+        <a class="btn btn-outline-light btn-lg" href="/recommendations"><i class="bi bi-stars me-1"></i>Recommendations</a>
+        <a class="btn btn-outline-light" href="/analytics"><i class="bi bi-graph-up me-1"></i>Analytics</a>
       </div>
     </div>
-    <p class="text-muted small mt-2">Version {{ version }}</p>
+    <div class="col-lg-5">
+      <div class="card border-0 shadow">
+        <div class="card-body">
+          <h5 class="card-title">Dataset roles</h5>
+          <ul class="small mb-0">
+            <li><strong>DS1 (2M)</strong> — ratings, SVD, K-Means</li>
+            <li><strong>DS2 (100k)</strong> — genres, metadata, TF-IDF</li>
+            <li><strong>DS3 (Best)</strong> — characters enrichment</li>
+            <li><strong>DS4 (Amazon)</strong> — independent sentiment NLP</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if reports_available and metrics %}
+<div class="row g-3 mb-4">
+  <div class="col-md-3 col-6">
+    <div class="card stat-card h-100 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">CF RMSE (test)</div>
+        <div class="fs-4 fw-semibold">{{ "%.3f"|format(metrics.cf_rmse) if metrics.cf_rmse else "—" }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="card stat-card stat-success h-100 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Content books</div>
+        <div class="fs-4 fw-semibold">{{ metrics.content_books or metrics.catalog_books or "—" }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="card stat-card stat-warning h-100 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Sentiment accuracy</div>
+        <div class="fs-4 fw-semibold">
+          {% if metrics.sentiment_accuracy %}{{ "%.1f"|format(metrics.sentiment_accuracy * 100) }}%{% else %}—{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 col-6">
+    <div class="card stat-card stat-info h-100 shadow-sm">
+      <div class="card-body">
+        <div class="text-muted small">Cluster silhouette</div>
+        <div class="fs-4 fw-semibold">{{ "%.2f"|format(metrics.cluster_silhouette) if metrics.cluster_silhouette else "—" }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-book text-primary me-2"></i>Book search</h5>
+        <p class="card-text text-muted small">Search the DS2+DS3 content catalog by title, author, or genre.</p>
+        <a href="/books" class="btn btn-primary btn-sm">Open catalog</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-diagram-3 text-primary me-2"></i>Similar books</h5>
+        <p class="card-text text-muted small">TF-IDF cosine neighbors from the trained content model.</p>
+        <a href="/books/similar" class="btn btn-primary btn-sm">Find similar</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-person-hearts text-primary me-2"></i>Recommendations</h5>
+        <p class="card-text text-muted small">Personalized lists via Surprise SVD with content fallback.</p>
+        <a href="/recommendations" class="btn btn-primary btn-sm">Get recommendations</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-chat-quote text-primary me-2"></i>Sentiment</h5>
+        <p class="card-text text-muted small">Classify Amazon-style review text with the DS4 model.</p>
+        <a href="/sentiment" class="btn btn-primary btn-sm">Analyze text</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-people text-primary me-2"></i>Clustering</h5>
+        <p class="card-text text-muted small">K-Means user segments from DS1 rating behavior.</p>
+        <a href="/clustering" class="btn btn-primary btn-sm">View clusters</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100 shadow-sm border-0">
+      <div class="card-body">
+        <h5 class="card-title"><i class="bi bi-bar-chart text-primary me-2"></i>Analytics</h5>
+        <p class="card-text text-muted small">Pipeline metrics, EDA thumbnails, and model evaluation.</p>
+        <a href="/analytics" class="btn btn-primary btn-sm">Open dashboard</a>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

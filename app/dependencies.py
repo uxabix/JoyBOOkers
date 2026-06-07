@@ -19,6 +19,7 @@ from app.services.content_recommendation_service import ContentRecommendationSer
 from app.services.rating_service import RatingService
 from app.services.recommendation_service import RecommendationService
 from app.services.sentiment_service import SentimentService
+from app.services.reports_service import ReportsService
 from app.services.user_service import UserService
 
 
@@ -80,6 +81,12 @@ def get_sentiment_service(
     engine: SentimentEngine = Depends(get_sentiment_engine),
 ) -> SentimentService:
     return SentimentService(db, engine)
+
+
+@lru_cache
+def get_reports_service() -> ReportsService:
+    settings = get_settings()
+    return ReportsService(settings.reports_dir)
 
 
 @lru_cache

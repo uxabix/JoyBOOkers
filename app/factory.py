@@ -8,6 +8,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
+from bookrec.paths import PROJECT_ROOT
+
 from app.config import Settings, get_settings
 from app.db.session import engine, init_db
 from app.logging_config import get_logger, setup_logging
@@ -56,6 +58,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     if settings.static_dir.is_dir():
         app.mount("/static", StaticFiles(directory=str(settings.static_dir)), name="static")
+
+    reports_eda = PROJECT_ROOT / "reports" / "eda"
+    if reports_eda.is_dir():
+        app.mount("/reports-assets/eda", StaticFiles(directory=str(reports_eda)), name="reports-eda")
 
     app.include_router(api_router, prefix="/api/v1")
     app.include_router(web_router)

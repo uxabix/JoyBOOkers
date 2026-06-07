@@ -1,36 +1,23 @@
-<p class="text-muted small">{{ result.total }} books found</p>
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <p class="text-muted small mb-0">{{ result.total }} book{{ "s" if result.total != 1 else "" }} found</p>
+  {% if result.total > 0 %}
+  <span class="badge text-bg-light text-dark">Page {{ result.page }} / {{ result.pages }}</span>
+  {% endif %}
+</div>
+
+<div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 row-cols-xl-4 g-3">
   {% for book in result.items %}
-  <div class="col">
-    <div class="card h-100 shadow-sm">
-      <div class="card-body">
-        <h5 class="card-title">
-          <a href="/books/{{ book.id }}" class="text-decoration-none">{{ book.title }}</a>
-        </h5>
-        <p class="card-subtitle text-muted small">{{ book.author or "Unknown author" }}</p>
-        {% if book.genre %}
-        <p class="card-text small text-truncate">{{ book.genre }}</p>
-        {% endif %}
-        {% if book.avg_rating %}
-        <span class="badge text-bg-warning">{{ "%.2f"|format(book.avg_rating) }} ★</span>
-        {% endif %}
-      </div>
-    </div>
-  </div>
+  {% include "partials/_book_card.html" %}
   {% else %}
   <div class="col-12">
-    <div class="alert alert-info">No books match your search.</div>
+    <div class="alert alert-info mb-0">
+      <i class="bi bi-inbox me-1"></i>
+      No books match your search. Import the catalog into SQLite or add books via the API.
+    </div>
   </div>
   {% endfor %}
 </div>
-{% if result.pages > 1 %}
-<nav class="mt-4" aria-label="Book pagination">
-  <ul class="pagination">
-    {% for p in range(1, result.pages + 1) %}
-    <li class="page-item {% if p == result.page %}active{% endif %}">
-      <a class="page-link" href="/books?q={{ q }}&genre={{ genre }}&page={{ p }}">{{ p }}</a>
-    </li>
-    {% endfor %}
-  </ul>
-</nav>
-{% endif %}
+
+{% with base_url="/books", hx_target="#book-results" %}
+{% include "partials/_pagination.html" %}
+{% endwith %}

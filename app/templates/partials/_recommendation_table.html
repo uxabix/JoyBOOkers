@@ -1,0 +1,40 @@
+{% if items %}
+<div class="table-responsive">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th scope="col" style="width:3rem">#</th>
+        <th scope="col">Book</th>
+        <th scope="col">Author</th>
+        <th scope="col" class="text-end">Score</th>
+        <th scope="col" class="text-end">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td class="text-muted">{{ item.rank }}</td>
+        <td>
+          <a href="/books/{{ item.book.id }}" class="fw-medium text-decoration-none">{{ item.book.title }}</a>
+          {% if item.book.genre %}
+          <div class="small text-muted text-truncate" style="max-width:280px">{{ item.book.genre }}</div>
+          {% endif %}
+        </td>
+        <td class="small">{{ item.book.author or "—" }}</td>
+        <td class="text-end">
+          <span class="badge text-bg-primary">{{ "%.3f"|format(item.score) }}</span>
+        </td>
+        <td class="text-end">
+          <a href="/books/similar?book_id={{ item.book.id }}" class="btn btn-sm btn-outline-secondary">Similar</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="alert alert-info mb-0">
+  <i class="bi bi-info-circle me-1"></i>
+  No recommendations returned. Ensure the database has users, ratings, and books loaded.
+</div>
+{% endif %}

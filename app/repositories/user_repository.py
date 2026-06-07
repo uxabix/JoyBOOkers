@@ -16,3 +16,7 @@ class UserRepository(BaseRepository[User]):
     def get_by_external_id(self, external_id: str) -> User | None:
         stmt = select(User).where(User.external_id == external_id)
         return self.session.scalars(stmt).first()
+
+    def list_recent(self, *, limit: int = 20) -> list[User]:
+        stmt = select(User).order_by(User.id.desc()).limit(limit)
+        return list(self.session.scalars(stmt).all())
