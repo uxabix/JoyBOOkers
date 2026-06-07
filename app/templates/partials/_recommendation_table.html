@@ -29,7 +29,15 @@
             F{{ "%.2f"|format(item.score_breakdown.cf) }}
             K{{ "%.2f"|format(item.score_breakdown.cluster) }}
             P{{ "%.2f"|format(item.score_breakdown.popularity) }}
+            G{{ "%.2f"|format(item.score_breakdown.genre) }}
           </div>
+          {% endif %}
+          {% if item.explanations %}
+          <ul class="small text-muted mb-0 ps-3 mt-1" style="font-size:0.72rem">
+            {% for line in item.explanations %}
+            <li>{{ line }}</li>
+            {% endfor %}
+          </ul>
           {% endif %}
         </td>
         <td class="text-end">

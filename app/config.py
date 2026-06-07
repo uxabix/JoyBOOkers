@@ -14,6 +14,7 @@ from bookrec.paths import (
     MODEL_CLUSTERING_DIR,
     MODEL_CONTENT_DIR,
     MODEL_SENTIMENT_DIR,
+    PROC_MODELS,
     PROC_FEATURES,
     PROC_SPLITS,
     PROJECT_ROOT,
@@ -55,6 +56,8 @@ class Settings(BaseSettings):
     hybrid_candidate_limit: int = 2500
     cold_start_book_count: int = 15
     cluster_affinity_path: Path = PROC_FEATURES / "clustering" / "cluster_affinity.json"
+    genre_priors_path: Path = PROC_FEATURES / "clustering" / "genre_priors.json"
+    hybrid_weights_path: Path = PROC_MODELS / "hybrid" / "ridge_weights.joblib"
 
     session_secret: str = "joybookers-dev-secret-change-in-production"
     session_max_age: int = 60 * 60 * 24 * 30

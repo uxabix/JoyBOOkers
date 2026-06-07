@@ -9,7 +9,10 @@ from app.db.models.recommendation import Recommendation
 from app.ml.cluster_affinity import ClusterAffinityStore
 from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
+from app.ml.genre_priors import GenrePriorStore
 from app.ml.hybrid_scoring import HybridScoringEngine, ScoredCandidate
+from app.ml.hybrid_weights import HybridWeightModel
+from app.ml.signals import heuristic_signal_keys, ml_signal_keys, signal_kind_map
 from app.ml.user_clustering import UserClusteringEngine
 from app.ml.user_profile import UserProfileBuilder, blend_signal_weights
 from app.repositories.book_repository import BookRepository
@@ -34,6 +37,8 @@ class RecommendationService:
         content_engine: ContentRecommendationEngine,
         clustering_engine: UserClusteringEngine,
         cluster_affinity: ClusterAffinityStore,
+        genre_priors: GenrePriorStore,
+        weight_model: HybridWeightModel,
         settings: Settings,
     ) -> None:
         self.session = session
@@ -50,11 +55,15 @@ class RecommendationService:
         if not self.cf_engine.is_loaded:
             self.cf_engine.load()
         known_users = self.cf_engine.known_user_ids() if self.cf_engine.is_loaded else set()
+        if not weight_model.is_loaded:
+            weight_model.load()
+        self.weight_model = weight_model
         self.profile_builder = UserProfileBuilder(
             session,
             clustering_engine,
             settings,
             cf_known_user_ids=known_users,
+            genre_priors=genre_priors,
         )
         self.hybrid = HybridScoringEngine(
             session,
@@ -63,6 +72,7 @@ class RecommendationService:
             content_engine,
             cluster_affinity,
             settings,
+            weight_model=weight_model,
         )
 
     def recommend_for_user(
@@ -91,15 +101,28 @@ class RecommendationService:
             scored = self.hybrid.recommend(profile, limit=limit)
             algo = "hybrid"
 
-        weights = blend_signal_weights(profile)
+        weight_source = (
+            self.hybrid.last_weight_source
+            if algo == "hybrid"
+            else ("learned" if self.weight_model.is_loaded and profile.cf_available else "manual")
+        )
+        weights = (
+            self.weight_model.coefficients()
+            if weight_source == "learned" and self.weight_model.is_loaded
+            else blend_signal_weights(profile)
+        )
         summary = UserProfileSummary(
             cluster_id=profile.cluster_id,
             cluster_label=profile.cluster_label,
             rating_count=len(profile.rated_books),
             profile_strength=profile.profile_strength,
             top_genres=sorted(profile.genre_weights, key=profile.genre_weights.get, reverse=True)[:5],
+            genre_prior_active=profile.genre_prior_active,
             cf_available=profile.cf_available,
+            weight_source=weight_source,
             weights_used=weights,
+            ml_signals=ml_signal_keys(),
+            heuristic_signals=heuristic_signal_keys(),
         )
 
         items = self._to_items(scored, algorithm=algo)
@@ -178,7 +201,9 @@ class RecommendationService:
                         cluster=row.cluster,
                         popularity=row.pop,
                         genre=row.genre,
+                        signal_kinds=signal_kind_map(),
                     ),
+                    explanations=row.explanations or [],
                 )
             )
         return items

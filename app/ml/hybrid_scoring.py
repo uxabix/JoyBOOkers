@@ -10,6 +10,8 @@ from app.config import Settings
 from app.ml.cluster_affinity import ClusterAffinityStore
 from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
+from app.ml.explanations import build_explanations
+from app.ml.hybrid_weights import HybridWeightModel
 from app.ml.user_profile import (
     UserProfile,
     blend_signal_weights,
@@ -29,6 +31,7 @@ class ScoredCandidate:
     cluster: float = 0.0
     pop: float = 0.0
     genre: float = 0.0
+    explanations: list[str] | None = None
 
 
 class HybridScoringEngine:
@@ -40,6 +43,8 @@ class HybridScoringEngine:
         content_engine: ContentRecommendationEngine,
         cluster_affinity: ClusterAffinityStore,
         settings: Settings,
+        *,
+        weight_model: HybridWeightModel | None = None,
     ) -> None:
         self.session = session
         self.cf_engine = cf_engine
@@ -47,6 +52,7 @@ class HybridScoringEngine:
         self.content_engine = content_engine
         self.cluster_affinity = cluster_affinity
         self.settings = settings
+        self.weight_model = weight_model
         self.books = BookRepository(session)
 
     def recommend(
@@ -71,7 +77,8 @@ class HybridScoringEngine:
         if not candidates:
             return []
 
-        weights = blend_signal_weights(profile)
+        manual_weights = blend_signal_weights(profile)
+        use_learned = self.weight_model is not None and self.weight_model.is_loaded
         cf_scores = self._cf_scores(profile, candidates, limit=limit)
         content_scores = self._content_scores(content_vector, candidates)
         cluster_raw = {sid: self.cluster_affinity.score(profile.cluster_id, sid) for sid in candidates}
@@ -84,6 +91,9 @@ class HybridScoringEngine:
         pop_norm = self._normalize_dict(pop_raw)
         genre_norm = self._normalize_dict(genre_raw)
 
+        max_pop = max(pop_raw.values()) if pop_raw else 1.0
+        use_ridge = use_learned and profile.cf_available
+        used_learned = False
         scored: list[ScoredCandidate] = []
         for source_id, book_id in candidates.items():
             breakdown = {
@@ -93,7 +103,32 @@ class HybridScoringEngine:
                 "pop": pop_norm.get(source_id, 0.0),
                 "genre": genre_norm.get(source_id, 0.0),
             }
-            final = sum(weights[k] * breakdown[k] for k in breakdown)
+            manual_score = sum(manual_weights[k] * breakdown[k] for k in breakdown)
+            if use_ridge:
+                ridge_feats = self._ridge_features(
+                    source_id,
+                    cf_scores=cf_scores,
+                    content_scores=content_scores,
+                    cluster_raw=cluster_raw,
+                    pop_raw=pop_raw,
+                    genre_raw=genre_raw,
+                    max_pop=max_pop,
+                )
+                ridge_score = self.weight_model.score(ridge_feats)  # type: ignore[union-attr]
+                if ridge_score > 0:
+                    final = ridge_score
+                    used_learned = True
+                else:
+                    final = manual_score
+            else:
+                final = manual_score
+
+            book = self.books.get_by_source_id(source_id)
+            explanations = build_explanations(
+                profile,
+                breakdown,
+                book_genre=book.genre if book else None,
+            )
             scored.append(
                 ScoredCandidate(
                     book_id=book_id,
@@ -104,11 +139,38 @@ class HybridScoringEngine:
                     cluster=breakdown["cluster"],
                     pop=breakdown["pop"],
                     genre=breakdown["genre"],
+                    explanations=explanations,
                 )
             )
 
         scored.sort(key=lambda x: x.final_score, reverse=True)
+        self._last_weight_source = "learned" if used_learned else "manual"
         return scored[:limit]
+
+    @property
+    def last_weight_source(self) -> str:
+        return getattr(self, "_last_weight_source", "manual")
+
+    @staticmethod
+    def _ridge_features(
+        source_id: str,
+        *,
+        cf_scores: dict[str, float],
+        content_scores: dict[str, float],
+        cluster_raw: dict[str, float],
+        pop_raw: dict[str, float],
+        genre_raw: dict[str, float],
+        max_pop: float,
+    ) -> dict[str, float]:
+        """Raw signal vector — must match training in hybrid_training.py."""
+        cf_val = cf_scores.get(source_id)
+        return {
+            "cf": HybridScoringEngine._norm_cf(cf_val) if cf_val is not None else 0.0,
+            "content": float(content_scores.get(source_id, 0.0)),
+            "cluster": float(cluster_raw.get(source_id, 0.0)),
+            "pop": float(pop_raw.get(source_id, 0.0)) / max_pop if max_pop > 0 else 0.0,
+            "genre": float(genre_raw.get(source_id, 0.0)),
+        }
 
     def recommend_cf_only(self, profile: UserProfile, *, limit: int) -> list[ScoredCandidate]:
         if not profile.cf_available:

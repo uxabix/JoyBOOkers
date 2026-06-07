@@ -26,6 +26,7 @@ class ScoreBreakdown(BaseModel):
     cluster: float = 0.0
     popularity: float = 0.0
     genre: float = 0.0
+    signal_kinds: dict[str, str] = Field(default_factory=dict)
 
 
 class UserProfileSummary(BaseModel):
@@ -34,8 +35,12 @@ class UserProfileSummary(BaseModel):
     rating_count: int = 0
     profile_strength: float = 0.0
     top_genres: list[str] = Field(default_factory=list)
+    genre_prior_active: bool = False
     cf_available: bool = False
+    weight_source: str = "manual"
     weights_used: dict[str, float] = Field(default_factory=dict)
+    ml_signals: list[str] = Field(default_factory=list)
+    heuristic_signals: list[str] = Field(default_factory=list)
 
 
 class RecommendationItem(BaseModel):
@@ -44,6 +49,7 @@ class RecommendationItem(BaseModel):
     algorithm: str
     rank: int
     score_breakdown: ScoreBreakdown | None = None
+    explanations: list[str] = Field(default_factory=list)
 
 
 class RecommendationResponse(BaseModel):

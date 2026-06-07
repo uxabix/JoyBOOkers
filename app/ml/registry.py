@@ -11,6 +11,8 @@ from app.logging_config import get_logger
 from app.ml.cluster_affinity import ClusterAffinityStore
 from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
+from app.ml.genre_priors import GenrePriorStore
+from app.ml.hybrid_weights import HybridWeightModel
 from app.ml.sentiment import SentimentEngine
 from app.ml.user_clustering import UserClusteringEngine
 
@@ -33,6 +35,8 @@ class MLModelRegistry:
     sentiment_engine: SentimentEngine = field(init=False)
     clustering_engine: UserClusteringEngine = field(init=False)
     cluster_affinity: ClusterAffinityStore = field(init=False)
+    genre_priors: GenrePriorStore = field(init=False)
+    hybrid_weights: HybridWeightModel = field(init=False)
     statuses: list[ModelStatus] = field(default_factory=list)
     _loaded: bool = False
 
@@ -50,6 +54,8 @@ class MLModelRegistry:
             self.settings.clustering_report_path,
         )
         self.cluster_affinity = ClusterAffinityStore(self.settings.cluster_affinity_path)
+        self.genre_priors = GenrePriorStore(self.settings.genre_priors_path)
+        self.hybrid_weights = HybridWeightModel(self.settings.hybrid_weights_path)
 
     def _content_matrix_path(self) -> Path:
         if self.settings.content_tfidf_path.is_file():
@@ -63,6 +69,8 @@ class MLModelRegistry:
             ModelStatus("sentiment", str(self.settings.sentiment_model_path), False, "lazy load"),
             self._load_one("clustering", self.settings.clustering_model_path, self.clustering_engine.load),
             self._load_one("cluster_affinity", self.settings.cluster_affinity_path, self.cluster_affinity.load),
+            self._load_one("genre_priors", self.settings.genre_priors_path, self.genre_priors.load),
+            self._load_one("hybrid_weights", self.settings.hybrid_weights_path, self.hybrid_weights.load),
         ]
 
     def ensure_loaded(self) -> None:
@@ -76,6 +84,8 @@ class MLModelRegistry:
             self._load_one("sentiment", self.settings.sentiment_model_path, self.sentiment_engine.load),
             self._load_one("clustering", self.settings.clustering_model_path, self.clustering_engine.load),
             self._load_one("cluster_affinity", self.settings.cluster_affinity_path, self.cluster_affinity.load),
+            self._load_one("genre_priors", self.settings.genre_priors_path, self.genre_priors.load),
+            self._load_one("hybrid_weights", self.settings.hybrid_weights_path, self.hybrid_weights.load),
         ]
         self._loaded = True
         loaded = sum(1 for s in self.statuses if s.loaded)

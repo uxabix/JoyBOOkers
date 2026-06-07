@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 from app.config import Settings
+from app.ml.genre_priors import GenrePriorStore
 from app.ml.user_clustering import UserClusteringEngine
 from app.repositories.book_repository import BookRepository
 from app.repositories.rating_repository import RatingRepository
@@ -34,15 +35,39 @@ class UserProfile:
     cluster_id: int = 1
     cluster_label: str | None = None
     genre_weights: dict[str, float] = field(default_factory=dict)
+    genre_prior_active: bool = False
     profile_strength: float = 0.0
     cf_available: bool = False
     content_vector: sparse.csr_matrix | None = None
 
 
-def _split_genres(genre: str | None) -> list[str]:
-    if not genre or not genre.strip():
+def _split_genres(genre: str | list | None) -> list[str]:
+    import re
+
+    import numpy as np
+
+    if genre is None:
         return []
-    parts = [g.strip().lower() for g in genre.replace(";", ",").split(",")]
+    if isinstance(genre, np.ndarray):
+        if genre.size == 0:
+            return []
+        flat = [str(x) for x in genre.ravel() if str(x).strip() and str(x) not in {"[]", "nan"}]
+        if len(flat) == 1:
+            return _split_genres(flat[0])
+        return _split_genres(", ".join(flat))
+    if isinstance(genre, (list, tuple, set)):
+        out: list[str] = []
+        for item in genre:
+            out.extend(_split_genres(item))
+        return out
+    text = str(genre).strip()
+    if not text or text in {"[]", "nan", "None"}:
+        return []
+    if text.startswith("[") and "'" in text:
+        quoted = re.findall(r"'([^']+)'", text)
+        if quoted:
+            return [g.strip().lower() for g in quoted if g.strip()]
+    parts = [g.strip().lower() for g in text.replace(";", ",").split(",")]
     return [g for g in parts if g]
 
 
@@ -70,7 +95,8 @@ def blend_signal_weights(profile: UserProfile) -> dict[str, float]:
     """Adaptive hybrid weights — same function for all user types."""
     n = len(profile.rated_books)
     if n == 0:
-        base = {"cf": 0.0, "content": 0.0, "cluster": 0.35, "pop": 0.65, "genre": 0.0}
+        # Sparse profile: cluster + popularity + genre priors (no CF/content vectors yet)
+        base = {"cf": 0.0, "content": 0.0, "cluster": 0.30, "pop": 0.45, "genre": 0.25}
     elif n <= 2:
         base = {"cf": 0.0, "content": 0.50, "cluster": 0.20, "pop": 0.20, "genre": 0.10}
     elif n < 10:
@@ -97,6 +123,7 @@ class UserProfileBuilder:
         settings: Settings,
         *,
         cf_known_user_ids: set[str] | None = None,
+        genre_priors: GenrePriorStore | None = None,
     ) -> None:
         self.session = session
         self.clustering = clustering
@@ -105,6 +132,7 @@ class UserProfileBuilder:
         self.ratings = RatingRepository(session)
         self.books = BookRepository(session)
         self._cf_known_user_ids = cf_known_user_ids
+        self._genre_priors = genre_priors
 
     def build(
         self,
@@ -146,6 +174,17 @@ class UserProfileBuilder:
             and str(user.external_id) in self._cf_known_user_ids
         )
 
+        genre_prior_active = False
+        if rated_books:
+            genre_weights = _genre_weights_from_ratings(rated_books)
+        elif self._genre_priors is not None:
+            if not self._genre_priors.is_loaded:
+                self._genre_priors.load()
+            genre_weights = self._genre_priors.for_cluster(cluster_id)
+            genre_prior_active = bool(genre_weights)
+        else:
+            genre_weights = {}
+
         return UserProfile(
             user_id=user_id,
             external_id=str(user.external_id),
@@ -153,7 +192,8 @@ class UserProfileBuilder:
             rated_books=rated_books,
             cluster_id=cluster_id,
             cluster_label=cluster_label,
-            genre_weights=_genre_weights_from_ratings(rated_books),
+            genre_weights=genre_weights,
+            genre_prior_active=genre_prior_active,
             profile_strength=profile_strength,
             cf_available=cf_available,
             content_vector=content_vector,

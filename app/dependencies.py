@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 from app.config import Settings, get_settings
 from app.db.session import get_db
 from app.ml.cluster_affinity import ClusterAffinityStore
+from app.ml.genre_priors import GenrePriorStore
+from app.ml.hybrid_weights import HybridWeightModel
 from app.ml.collaborative import CollaborativeFilteringEngine
 from app.ml.content_based import ContentRecommendationEngine
 from app.ml.registry import MLModelRegistry
@@ -65,6 +67,20 @@ def get_cluster_affinity_store(request: Request) -> ClusterAffinityStore:
     if not registry.cluster_affinity.is_loaded:
         registry.cluster_affinity.load()
     return registry.cluster_affinity
+
+
+def get_genre_prior_store(request: Request) -> GenrePriorStore:
+    registry = _ensure_ml_loaded(request)
+    if not registry.genre_priors.is_loaded:
+        registry.genre_priors.load()
+    return registry.genre_priors
+
+
+def get_hybrid_weight_model(request: Request) -> HybridWeightModel:
+    registry = _ensure_ml_loaded(request)
+    if not registry.hybrid_weights.is_loaded:
+        registry.hybrid_weights.load()
+    return registry.hybrid_weights
 
 
 def get_book_service(db: Session = Depends(get_db)) -> BookService:
@@ -128,6 +144,8 @@ def get_recommendation_service(
     content_engine: ContentRecommendationEngine = Depends(get_content_engine),
     clustering_engine: UserClusteringEngine = Depends(get_clustering_engine),
     cluster_affinity: ClusterAffinityStore = Depends(get_cluster_affinity_store),
+    genre_priors: GenrePriorStore = Depends(get_genre_prior_store),
+    weight_model: HybridWeightModel = Depends(get_hybrid_weight_model),
     settings: Settings = Depends(get_settings_dep),
 ) -> RecommendationService:
     return RecommendationService(
@@ -137,6 +155,8 @@ def get_recommendation_service(
         content_engine,
         clustering_engine,
         cluster_affinity,
+        genre_priors,
+        weight_model,
         settings,
     )
 
