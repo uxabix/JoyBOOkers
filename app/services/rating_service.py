@@ -11,6 +11,7 @@ from app.repositories.rating_repository import RatingRepository
 from app.repositories.user_repository import UserRepository
 from app.schemas.book import BookRead
 from app.schemas.rating import RatingBrowseResult, RatingCreate, RatingRead, RatingWithBook, UserRatingStats
+from app.services.cf_retrain_scheduler import CfRetrainScheduler
 from app.services.clustering_service import ClusteringService
 
 
@@ -19,12 +20,14 @@ class RatingService:
         self,
         session: Session,
         clustering_service: ClusteringService | None = None,
+        cf_retrain_scheduler: CfRetrainScheduler | None = None,
     ) -> None:
         self.repo = RatingRepository(session)
         self.books = BookRepository(session)
         self.users = UserRepository(session)
         self.session = session
         self.clustering = clustering_service
+        self.cf_retrain = cf_retrain_scheduler
 
     def create(self, payload: RatingCreate) -> RatingRead:
         if payload.user_id is None:
@@ -58,6 +61,8 @@ class RatingService:
         self.session.commit()
         if self.clustering is not None:
             self.clustering.update_user_cluster(user_id)
+        if self.cf_retrain is not None:
+            self.cf_retrain.record_app_change()
 
     def list_for_user(self, user_id: int) -> list[RatingRead]:
         rows = self.repo.list_for_user(user_id)

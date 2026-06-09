@@ -72,7 +72,7 @@
     "entity": "users",
     "n_clusters": 3,
     "n_users": 3311,
-    "inertia": 10552.5361328125,
+    "inertia": 10552.53515625,
     "silhouette": 0.4702112078666687,
     "silhouette_by_k": {
       "3": 0.4702112078666687,

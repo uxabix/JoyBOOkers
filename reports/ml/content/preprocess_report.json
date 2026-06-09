@@ -1,6 +1,6 @@
 {
   "dataset": "ds2_goodreads_100k + ds3_goodreads_best",
-  "catalog_rows": 152423,
+  "catalog_rows": 149342,
   "ds1_excluded": true,
   "matrix_format": "scipy.sparse.csr"
 }

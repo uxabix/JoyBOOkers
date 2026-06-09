@@ -12,6 +12,7 @@ from app.db.migrate import migrate_schema
 from app.db.session import configure_engine, dispose_engine, init_db
 from app.logging_config import get_logger, setup_logging
 from app.ml.registry import MLModelRegistry
+from app.services.cf_retrain_scheduler import CfRetrainScheduler
 from app.templates_env import build_templates_engine, clear_templates_cache
 
 logger = get_logger(__name__)
@@ -56,6 +57,10 @@ def on_startup(app: FastAPI, settings: Settings) -> None:
     app.state.content_engine = registry.content_engine
     app.state.sentiment_engine = registry.sentiment_engine
     app.state.clustering_engine = registry.clustering_engine
+    app.state.cf_retrain_scheduler = CfRetrainScheduler(
+        settings,
+        registry_getter=lambda: app.state.ml_registry,
+    )
     app.state.settings = settings
 
     logger.info("=== startup complete ===")

@@ -97,6 +97,16 @@ class MLModelRegistry:
         loaded = sum(1 for s in self.statuses if s.loaded)
         logger.info("ML registry: %s/%s models loaded", loaded, len(self.statuses))
 
+    def reload_cf(self) -> bool:
+        ok = self.cf_engine.reload()
+        for status in self.statuses:
+            if status.name == "collaborative_filtering":
+                status.loaded = ok
+                status.detail = "reloaded" if ok else "reload failed"
+                break
+        logger.info("CF model reload: %s", "ok" if ok else "failed")
+        return ok
+
     def _load_one(self, name: str, path: Path, loader) -> ModelStatus:
         if not path.is_file():
             msg = f"artifact missing: {path}"

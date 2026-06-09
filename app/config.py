@@ -60,6 +60,10 @@ class Settings(BaseSettings):
     genre_priors_path: Path = PROC_FEATURES / "clustering" / "genre_priors.json"
     hybrid_weights_path: Path = PROC_MODELS / "hybrid" / "ridge_weights.joblib"
 
+    cf_retrain_enabled: bool = True
+    cf_retrain_threshold: int = 10
+    cf_retrain_min_interval_seconds: int = 30
+
     session_secret: str = "joybookers-dev-secret-change-in-production"
     session_max_age: int = 60 * 60 * 24 * 30
 

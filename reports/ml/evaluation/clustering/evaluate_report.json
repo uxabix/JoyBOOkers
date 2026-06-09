@@ -2,7 +2,7 @@
   "algorithm": "KMeans",
   "n_users": 3311,
   "n_clusters": 3,
-  "inertia": 10552.5361328125,
+  "inertia": 10552.53515625,
   "silhouette": 0.4702112078666687,
   "cluster_profiles_mean": {
     "n_ratings": {
@@ -10166,11 +10166,11 @@
     },
     "n_ratings_histogram": {
       "bin_labels": [
-        "3–5",
-        "6–10",
-        "11–20",
-        "21–50",
-        "51–100",
+        "3-5",
+        "6-10",
+        "11-20",
+        "21-50",
+        "51-100",
         "100+"
       ],
       "by_cluster": {
@@ -10204,7 +10204,8 @@
         "1": 611,
         "2": 1322
       }
-    }
+    },
+    "pca_model_path": "data/processed/models/clustering/pca_viz.joblib"
   },
   "model_path": "data/processed/models/clustering/kmeans_model.joblib"
 }

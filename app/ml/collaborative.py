@@ -42,6 +42,13 @@ class CollaborativeFilteringEngine:
         logger.info("Loaded Surprise model from %s", self.model_path)
         return True
 
+    def reload(self) -> bool:
+        """Drop cached model and train catalog, then load from disk."""
+        self._model = None
+        self._train_item_ids = None
+        self._train_user_ids = None
+        return self.load()
+
     def _load_train_item_ids(self) -> None:
         if self._train_item_ids is not None:
             return

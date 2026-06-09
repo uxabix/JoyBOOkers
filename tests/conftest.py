@@ -39,6 +39,7 @@ def client() -> TestClient:
         database_url="sqlite://",
         log_dir=Path("logs"),
         ml_eager_load=False,
+        cf_retrain_enabled=False,
     )
     import app.db.session as db_session
 

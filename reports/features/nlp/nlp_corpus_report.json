@@ -1,10 +1,10 @@
 {
-  "n_reviews": 96460,
-  "n_positive": 83794,
-  "n_negative": 12666,
+  "n_reviews": 1887091,
+  "n_positive": 1631586,
+  "n_negative": 255505,
   "vocab_size": 15000,
   "word_count_median": 90.0,
-  "word_count_p99": 771.4100000000035,
+  "word_count_p99": 756.0,
   "independent_of_goodreads": true,
   "paths": {
     "reviews_enriched": "data/processed/features/nlp/reviews_enriched.parquet",

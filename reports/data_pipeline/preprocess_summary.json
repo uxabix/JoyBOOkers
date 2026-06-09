@@ -121,7 +121,21 @@
     }
   },
   "ds2": {
-    "skipped": "no raw files"
+    "source": "ds2_goodreads_100k",
+    "load": {
+      "n_files": 1,
+      "files": [
+        "GoodReads_100k_books.csv"
+      ],
+      "rows_per_file": {
+        "GoodReads_100k_books.csv": 100000
+      },
+      "rows_total": 100000
+    },
+    "rows_clean": 99999,
+    "rows_missing_title": 0,
+    "rows_with_genres": 89532,
+    "unique_authors_norm": 68513
   },
   "ds3": {
     "source": "ds3_goodreads_best",
@@ -140,6 +154,38 @@
     "rows_with_characters": 13758
   },
   "ds4": {
-    "skipped": "no raw files"
+    "source": "ds4_amazon_reviews",
+    "load": {
+      "n_files": 1,
+      "files": [
+        "Books_rating.csv"
+      ],
+      "rows_per_file": {
+        "Books_rating.csv": 3000000
+      },
+      "rows_total": 3000000
+    },
+    "nlp_independent": true,
+    "rows_raw": 3000000,
+    "rows_clean": 1887091,
+    "rows_dropped_neutral_sentiment": 1111565,
+    "sentiment_positive": 1631586,
+    "sentiment_negative": 255505,
+    "rating_outliers": {
+      "below_1": 0,
+      "above_5": 0,
+      "null_after_coerce": 0
+    },
+    "text_outliers": {
+      "empty_reviews": 0,
+      "very_short_lt_10": 0,
+      "very_long_gt_20000": 0,
+      "length_p50": 502.0,
+      "length_p99": 4481.0
+    },
+    "label_thresholds": {
+      "positive": 4.0,
+      "negative": 2.0
+    }
   }
 }

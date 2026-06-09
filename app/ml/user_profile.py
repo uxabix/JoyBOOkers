@@ -168,8 +168,7 @@ class UserProfileBuilder:
         n = len(rated_books)
         profile_strength = min(1.0, n / 10.0)
         cf_available = (
-            not user.is_registered
-            and n >= self.settings.min_cf_ratings_per_user
+            n >= self.settings.min_cf_ratings_per_user
             and self._cf_known_user_ids is not None
             and str(user.external_id) in self._cf_known_user_ids
         )

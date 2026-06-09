@@ -22,6 +22,7 @@ from app.services.clustering_service import ClusteringService
 from app.services.cold_start_service import ColdStartService
 from app.services.collaborative_filtering_service import CollaborativeFilteringService
 from app.services.content_recommendation_service import ContentRecommendationService
+from app.services.cf_retrain_scheduler import CfRetrainScheduler
 from app.services.rating_service import RatingService
 from app.services.recommendation_service import RecommendationService
 from app.services.reports_service import ReportsService
@@ -114,11 +115,16 @@ def get_clustering_service(
     return ClusteringService(db, engine, settings)
 
 
+def get_cf_retrain_scheduler(request: Request) -> CfRetrainScheduler:
+    return request.app.state.cf_retrain_scheduler
+
+
 def get_rating_service(
     db: Session = Depends(get_db),
     clustering_service: ClusteringService = Depends(get_clustering_service),
+    cf_retrain_scheduler: CfRetrainScheduler = Depends(get_cf_retrain_scheduler),
 ) -> RatingService:
-    return RatingService(db, clustering_service)
+    return RatingService(db, clustering_service, cf_retrain_scheduler=cf_retrain_scheduler)
 
 
 def get_cf_service(
